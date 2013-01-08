@@ -1,0 +1,7 @@
+INDEX VERSION 1.126+/home/cappie/git/battletoads/.metadata/.plugins/org.eclipse.jdt.core
+1412146747.index
+139298353.index
+3139498368.index
+2889915287.index
+1388860598.index
+287317967.index
