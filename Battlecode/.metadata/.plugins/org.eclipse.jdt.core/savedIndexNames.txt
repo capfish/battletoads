@@ -1,0 +1,7 @@
+INDEX VERSION 1.126+/home/cappie/Battlecode/.metadata/.plugins/org.eclipse.jdt.core
+2889915287.index
+2660747711.index
+2281328705.index
+2399472177.index
+3716121286.index
+3139498368.index
