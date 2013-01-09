@@ -17,41 +17,47 @@ public class RobotPlayer {
 			try {
 				if (rc.getType() == RobotType.HQ) {
 					if (rc.isActive()) {
+						if (Clock.getRoundNum() < 50) rc.researchUpgrade(Upgrade.PICKAXE);
 						// Spawn a soldier
-						Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-						if (rc.canMove(dir)) rc.spawn(dir);
-						//research pickaxe
+						else {
+							Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+							if (rc.canMove(dir)) rc.spawn(dir);
+						}
 						rc.researchUpgrade(Upgrade.PICKAXE);
 					}
 				} else if (rc.getType() == RobotType.SOLDIER) {
 					if (rc.isActive()) {
-						if (Clock.getRoundNum() < 50) {
-							MapLocation[] encampments = rc.senseEncampmentSquares(rc.getLocation(), 25, Team.NEUTRAL);
-							if (encampments.length != 0) rc.move(rc.getLocation().directionTo(encampments[1]));
-						}
-						MapLocation[] neutralMines = rc.senseMineLocations(rc.getLocation(), 2, Team.NEUTRAL);
-						MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, rc.getTeam().opponent());
-						if (enemyMines.length != 0 )
-							rc.defuseMine(enemyMines[0]);
-						else if (neutralMines.length != 0)
-							rc.defuseMine(neutralMines[0]);
-						if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 16 && Math.random()<0.05) {
-							// Lay a mine 
-								if(rc.senseMine(rc.getLocation())==null) rc.layMine();
-						} else { 
-							// move towards headquarters
-							//Direction dir = Direction.values()[(int)(Math.random()*8)];
-							Direction dir;
-							if(rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 16) dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+						if (Clock.getRoundNum() < 100) {
+							if (rc.senseEncampmentSquare(rc.getLocation())) rc.captureEncampment(RobotType.GENERATOR);
 							else {
-								dir = randomDir(rc);
+								MapLocation[] encampments = rc.senseEncampmentSquares(rc.getLocation(), 25, Team.NEUTRAL);
+								if (encampments.length != 0) rc.move(rc.getLocation().directionTo(encampments[(int)(Math.random()*encampments.length)]));
 							}
-							if (rc.isActive()) {
-								if(rc.canMove(dir)) {
-									rc.move(dir);
-									//rc.setIndicatorString(0, "Last direction moved: "+dir.toString());
-								} else {
-									rc.move(randomDir(rc));
+						}
+						if (rc.isActive()) {
+							MapLocation[] neutralMines = rc.senseMineLocations(rc.getLocation(), 2, Team.NEUTRAL);
+							MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, rc.getTeam().opponent());
+							if (enemyMines.length != 0 )
+								rc.defuseMine(enemyMines[0]);
+							else if (neutralMines.length != 0)
+								rc.defuseMine(neutralMines[0]);
+							if ((rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 25 && Math.random()<0.5) || Math.random()<0.05) {
+								if(rc.senseMine(rc.getLocation())==null) rc.layMine(); // Lay a mine
+							} else { 
+								// move towards headquarters
+								//Direction dir = Direction.values()[(int)(Math.random()*8)];
+								Direction dir;
+								if(rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 16) dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+								else {
+									dir = randomDir(rc);
+								}
+								if (rc.isActive()) {
+									if(rc.canMove(dir)) {
+										rc.move(dir);
+										//rc.setIndicatorString(0, "Last direction moved: "+dir.toString());
+									} else {
+										rc.move(randomDir(rc));
+									}
 								}
 							}
 						}
