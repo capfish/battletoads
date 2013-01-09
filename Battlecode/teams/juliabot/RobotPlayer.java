@@ -8,6 +8,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
+import battlecode.common.Upgrade;
 
 
 public class RobotPlayer {
@@ -19,15 +20,17 @@ public class RobotPlayer {
 						// Spawn a soldier
 						Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 						if (rc.canMove(dir)) rc.spawn(dir);
+						//research pickaxe
+						rc.researchUpgrade(Upgrade.PICKAXE);
 					}
 				} else if (rc.getType() == RobotType.SOLDIER) {
 					if (rc.isActive()) {
-						/*if (Clock.getRoundNum() < 50) {
-							MapLocation[] encampments = rc.senseAllEncampmentSquares();
-							rc.move(rc)
-						}*/
+						if (Clock.getRoundNum() < 50) {
+							MapLocation[] encampments = rc.senseEncampmentSquares(rc.getLocation(), 25, Team.NEUTRAL);
+							if (encampments.length != 0) rc.move(rc.getLocation().directionTo(encampments[1]));
+						}
 						MapLocation[] neutralMines = rc.senseMineLocations(rc.getLocation(), 2, Team.NEUTRAL);
-						MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, Team.A);
+						MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, rc.getTeam().opponent());
 						if (enemyMines.length != 0 )
 							rc.defuseMine(enemyMines[0]);
 						else if (neutralMines.length != 0)
