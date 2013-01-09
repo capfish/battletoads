@@ -67,6 +67,8 @@ public class Message {
 			return "error";
 		}
 	}
+	public static boolean isSetDUMMY1(String s) {return false;}
+	public static boolean isSetDUMMY2(String s) {return false;}
 	private String getChannel(int n, int counter) {
 		try {
 			int msg = rc.readBroadcast(n);
