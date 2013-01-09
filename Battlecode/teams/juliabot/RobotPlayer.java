@@ -27,7 +27,7 @@ public class RobotPlayer {
 							rc.move(rc)
 						}*/
 						MapLocation[] neutralMines = rc.senseMineLocations(rc.getLocation(), 2, Team.NEUTRAL);
-						MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, Team.A);
+						MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, rc.getTeam().opponent());
 						if (enemyMines.length != 0 )
 							rc.defuseMine(enemyMines[0]);
 						else if (neutralMines.length != 0)
