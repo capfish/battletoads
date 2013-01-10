@@ -7,6 +7,7 @@ import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.MapLocation;
 import battlecode.common.Clock;
+import battlecode.common.Upgrade;
 
 /** The example funcs player is a player meant to demonstrate basic usage of the most common commands.
  * Robots will move around randomly, occasionally mining and writing useless messages.
@@ -19,11 +20,14 @@ public class RobotPlayer {
             try {
                 if (rc.getType() == RobotType.HQ) {
                     if (rc.isActive()) {
+                        if (Clock.getRoundNum() < 80) rc.researchUpgrade(Upgrade.PICKAXE);
                         // Spawn a soldier
-                        Direction dir = randomDir(rc);
-                        if (rc.canMove(dir))
-                            rc.spawn(dir);
+                        else {
+                            Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());//randomDir(rc);
+                            if (rc.canMove(dir)) rc.spawn(dir);
+                        }
                     }
+
                 } else if (rc.getType() == RobotType.SOLDIER) {
                     if (rc.isActive()) {
 
@@ -38,28 +42,52 @@ public class RobotPlayer {
                                                 
                         if (enemyMines.length != 0) rc.defuseMine(enemyMines[0]);
                         else if (neutralMines.length != 0) rc.defuseMine(neutralMines[0]);
+
+                        if(Clock.getRoundNum() < 250){
+                            if (Math.random() < .5) {// && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 16) {
+                                // Lay a mine 
+                                if(rc.senseMine(rc.getLocation())==null) rc.layMine();
+                            } else if (nearbyEncampments.length != 0) {
+                                if (rc.senseEncampmentSquare(rc.getLocation())) rc.captureEncampment(RobotType.GENERATOR);
+                                else {
+                                    Direction dir = rc.getLocation().directionTo(nearbyEncampments[0]);
+                                    if (rc.canMove(dir)) rc.move(dir);
+                                    else rc.move(randomDir(rc));
+                                }
+                            } else { 
+                                // Choose a random direction, and move that way if possible
+                                Direction dir = randomDir(rc);
+                                if(rc.canMove(dir)) {
+                                    rc.move(dir);
+                                    rc.setIndicatorString(0, "Last direction moved: "+dir.toString());
+                                }
+                            }
+                        }
+                            
                         
-                        if (Math.random() < .01 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 16) {
-                            // Lay a mine 
-                            if(rc.senseMine(rc.getLocation())==null)
-                                rc.layMine();
-                        } else if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 16 && nearbyEncampments.length != 0) {
-                            if (rc.senseEncampmentSquare(rc.getLocation())) rc.captureEncampment(RobotType.GENERATOR);
-                            else {
-                                Direction dir = rc.getLocation().directionTo(nearbyEncampments[0]);
+                        if (Clock.getRoundNum() >= 250){
+                            if (Math.random() < .25) {// && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 16) {
+                                // Lay a mine 
+                                if(rc.senseMine(rc.getLocation())==null)
+                                    rc.layMine();
+                            } else if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 16 && nearbyEncampments.length != 0) {
+                                if (rc.senseEncampmentSquare(rc.getLocation())) rc.captureEncampment(RobotType.GENERATOR);
+                                else {
+                                    Direction dir = rc.getLocation().directionTo(nearbyEncampments[0]);
+                                    if (rc.canMove(dir)) rc.move(dir);
+                                    else rc.move(randomDir(rc));
+                                }
+                            } else if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 16 && nearbyEncampments.length == 0) {
+                                Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
                                 if (rc.canMove(dir)) rc.move(dir);
                                 else rc.move(randomDir(rc));
-                            }
-                        } else if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) > 16 && nearbyEncampments.length == 0) {
-                            Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                            if (rc.canMove(dir)) rc.move(dir);
-                            else rc.move(randomDir(rc));
-                        } else { 
-                            // Choose a random direction, and move that way if possible
-                            Direction dir = randomDir(rc);
-                            if(rc.canMove(dir)) {
-                                rc.move(dir);
-                                rc.setIndicatorString(0, "Last direction moved: "+dir.toString());
+                            } else { 
+                                // Choose a random direction, and move that way if possible
+                                Direction dir = randomDir(rc);
+                                if(rc.canMove(dir)) {
+                                    rc.move(dir);
+                                    rc.setIndicatorString(0, "Last direction moved: "+dir.toString());
+                                }
                             }
                         }
                     }
