@@ -4,6 +4,7 @@ package juliabot;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameConstants;
+import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -17,13 +18,9 @@ public class RobotPlayer {
 			try {
 				if (rc.getType() == RobotType.HQ) {
 					if (rc.isActive()) {
-						if (Clock.getRoundNum() < 50) rc.researchUpgrade(Upgrade.PICKAXE);
-						// Spawn a soldier
-						else {
 							Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 							if (rc.canMove(dir)) rc.spawn(dir);
-						}
-						rc.researchUpgrade(Upgrade.PICKAXE);
+							for (int i = 0; i < 5; i++) rc.researchUpgrade(Upgrade.PICKAXE);
 					}
 				} else if (rc.getType() == RobotType.SOLDIER) {
 					if (rc.isActive()) {
@@ -81,4 +78,7 @@ public class RobotPlayer {
 		if(rc.canMove(dir)) return dir;
 		else return randomDir(rc);
 	}
+	/*private static void chase(RobotController rc) {
+		if (rc.senseNearbyGameObjects(rc.getType(), 16, rc.getTeam().opponent())) rc.move(rc.getLocation().directionTo(location))
+	}*/
 }
