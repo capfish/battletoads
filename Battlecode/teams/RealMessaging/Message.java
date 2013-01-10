@@ -36,8 +36,9 @@ public class Message {
 		try {
 			int msg = pad(Integer.parseInt(bits, 2) * shift);
 			int channel = calcChannel(s_channel);
-			for (int i = 0; i < REDUNDANCY; i++) rc.broadcast(channel + i*REDUNDANCY, msg);
+			for (int i = 0; i < REDUNDANCY; i++) rc.broadcast(channel + i*MULT, msg);
 			s_channel = s_channel + 1;
+			System.out.println(channel);
 		} catch (Exception e) {}
 	}
 	
@@ -74,7 +75,7 @@ public class Message {
 			int msg = rc.readBroadcast(n);
 			int msg_sum = msg % p;
 			if (msg_sum != q && (p+msg_sum) != q) {
-				System.out.println("got " + msg_sum);
+				System.out.println("got " + msg_sum + "-----------------------------------------------------------------------------");
 				if (counter == 0)
 					return "corrupted";	//checks to see if its bad. if so, return null.
 				else return getChannel(n + MULT, counter-1);
