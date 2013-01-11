@@ -16,6 +16,7 @@ public class RobotPlayer {
                  Navigation
 
                  Mine Avoidance
+                 Dont defuse mines while being attacked
                  
                  HQ destruction
 
@@ -27,7 +28,9 @@ public class RobotPlayer {
 
                  Chasing around little bitches
 
-                 Sweet Rallying
+                 Sweet Rallying and Swarms like bees
+
+                 Broadcasting read is only .003 bytecodes!
                  
                  } catch (Exception e) {
                     e.printStackTrace();
