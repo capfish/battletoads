@@ -7,7 +7,6 @@ import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import battlecode.common.Team;
 
 
 public class RobotPlayer {
