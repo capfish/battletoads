@@ -64,7 +64,7 @@ public class RobotPlayer {
     private static boolean pickaxeSparseMineField(RobotController rc) {
     	int a = rc.getLocation().x % 4;
     	int b = rc.getLocation().y % 4;
-    	if((a+b) % 4 == 0) return true;
+    	if((a+b) % 4 == 0 && a == b) return true;
     	return false;
     }
 }
