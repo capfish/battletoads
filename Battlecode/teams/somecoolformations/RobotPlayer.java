@@ -16,7 +16,7 @@ public class RobotPlayer {
             try {
                 if (rc.getType() == RobotType.HQ) {
                     if (rc.isActive()) {
-                        if (Clock.getRoundNum() < 80) rc.researchUpgrade(Upgrade.PICKAXE);
+                        if (Clock.getRoundNum() < 50) rc.researchUpgrade(Upgrade.PICKAXE);
                         // Spawn a soldier
                         else {
                             Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
@@ -26,6 +26,8 @@ public class RobotPlayer {
 
                 } else if (rc.getType() == RobotType.SOLDIER) {
                     if (rc.isActive()) {
+                    	if (pickaxeSparseMineField(rc) && rc.senseMine(rc.getLocation()) == null) rc.layMine();
+                    	else rc.move(randomDir(rc));
                     }
                 }
                 rc.yield();
@@ -43,11 +45,26 @@ public class RobotPlayer {
     	Robot[] allied = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 10, rc.getTeam());
     	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 10, rc.getTeam().opponent());
     }
-    private static void sparseMineField(RobotController rc) {
-    	
+    private static boolean sparseMineField(RobotController rc) {
+    	if (rc.getLocation().x % 2 == 0 && rc.getLocation().y % 2 == 0) return true;
+    	else return false;
     }
-    private static void pickaxeMineField(RobotController rc, MapLocation center) {
-    	if(rc.getLocation().x == )
+    private static boolean sparserMineField(RobotController rc) {
+    	int a = rc.getLocation().x % 2;
+    	int b = rc.getLocation().y % 2;
+    	if ((a+b) % 2 == 0) return true;
+    	else return false;
     }
+    private static boolean pickaxeMineField(RobotController rc) {
+    	int a = rc.getLocation().x % 5;
+    	int b = rc.getLocation().y % 5;
+    	if (b == a*2 % 5) return true;
+    	else return false;
+    }
+    private static boolean pickaxeSparseMineField(RobotController rc) {
+    	int a = rc.getLocation().x % 4;
+    	int b = rc.getLocation().y % 4;
+    	if((a+b) % 4 == 0) return true;
+    	return false;
     }
 }
