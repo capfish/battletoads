@@ -1,3 +1,6 @@
 .metadata/*
 .classpath
 .project
+Battlecode/bin/*
+.*~
+.*#

@@ -12,7 +12,7 @@ public class RobotPlayer {
 			try {
 				msg.reset();
 				if (rc.getType() == RobotType.HQ) {
-					if (Clock.getRoundNum() < 2) {
+					if (Clock.getRoundNum() < 1) {
 						Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 						if (rc.canMove(dir))
 							rc.spawn(dir);

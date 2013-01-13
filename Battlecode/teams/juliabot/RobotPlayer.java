@@ -13,9 +13,16 @@ import battlecode.common.Upgrade;
 
 
 public class RobotPlayer {
+	private static MapLocation enemyHQ;
+	private static MapLocation myHQ;
 	public static void run(RobotController rc) {
+		enemyHQ = rc.senseEnemyHQLocation();
+		myHQ = rc.senseHQLocation();
+		System.out.println(myHQ);
+		for (int i = 0; i < Direction.values().length; i++) System.out.println(Direction.values()[i]);
 		while (true) {
-			try {
+			rc.yield();
+			/*try {
 				if (rc.getType() == RobotType.HQ) {
 					if (rc.isActive()) {
 							Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
@@ -70,7 +77,7 @@ public class RobotPlayer {
 				rc.yield();
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
+			}*/
 		}
 	}
 	private static Direction randomDir(RobotController rc) {

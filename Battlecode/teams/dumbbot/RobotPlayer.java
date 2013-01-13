@@ -1,4 +1,4 @@
-package dumbbot;
+package dumbbot; 
 
 import battlecode.common.Direction;
 import battlecode.common.GameConstants;
