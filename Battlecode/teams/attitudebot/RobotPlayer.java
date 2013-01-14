@@ -16,24 +16,26 @@ public class RobotPlayer {
             	if (rc.getType() == RobotType.SOLDIER){
             		attitudebot.soldierCode.soldierRun(rc);
             	}
-            	if (rc.getType() == RobotType.HQ){
+            	else if (rc.getType() == RobotType.HQ){
             		attitudebot.hqCode.hqRun(rc);
             	}
-            	if (rc.getType() == RobotType.ARTILLERY){
+            	else if (rc.getType() == RobotType.ARTILLERY){
             		attitudebot.encampCode.artilleryRun(rc);
             	}
-            	if (rc.getType() == RobotType.GENERATOR){
+/*
+            	else if (rc.getType() == RobotType.GENERATOR){
             		attitudebot.encampCode.generatorRun(rc);
             	}
-            	if (rc.getType() == RobotType.MEDBAY){
+            	else if (rc.getType() == RobotType.MEDBAY){
             		attitudebot.encampCode.medbayRun(rc);
             	}
-            	if (rc.getType() == RobotType.SHIELDS){
+            	else if (rc.getType() == RobotType.SHIELDS){
             		attitudebot.encampCode.shieldsRun(rc);
             	}
-            	if (rc.getType() == RobotType.SUPPLIER){
+            	else if (rc.getType() == RobotType.SUPPLIER){
             		attitudebot.encampCode.supplierRun(rc);
             	}
+*/
             	rc.yield();
             } catch (Exception e) {
             	e.printStackTrace();
