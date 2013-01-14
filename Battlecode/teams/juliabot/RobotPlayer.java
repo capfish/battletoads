@@ -3,10 +3,13 @@ package juliabot;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
+
+import battlecode.common.Direction;
 import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import battlecode.common.Team;
 
 
 public class RobotPlayer {
@@ -15,7 +18,9 @@ public class RobotPlayer {
 	private static int width, height;
     static boolean[][] map;
     static Point[][] weights;
-    static PriorityQueue<Point> queue;
+    //static PriorityQueue<Point> queue;
+    static Point[] queue;
+    static int queueIndex;
 	public static void run(RobotController rc) {
 		enemyHQ = rc.senseEnemyHQLocation();
 		myHQ = rc.senseHQLocation();
@@ -28,13 +33,17 @@ public class RobotPlayer {
 			try {
 				if (rc.getType() == RobotType.HQ) {
 					if (rc.isActive()) {
+						//rc.spawn(Direction.SOUTH);
                         MapLocation[] mines = rc.senseNonAlliedMineLocations(rc.getLocation(), width*height);
-                        queue = new PriorityQueue<Point>(height, new costComparator());
+                        //queue = new PriorityQueue<Point>(height, new costComparator());
+                        queue = new Point[(height+width)*5];
+                        queueIndex = 0;
                         for (int i = 0; i < height; i++) for (int j = 0; j < width; j++) map[i][j] = false;
                         for (int i = 0; i < mines.length; i++) map[mines[i].x][mines[i].y] = true;
                         for (int i = 0; i < height; i++) for (int j = 0; j < width; j++) weights[i][j] = new Point(i,j);
                         Point dude = new Point(myHQ.x, myHQ.y, 0);
-                        queue.add(dude);
+                        //queue.add(dude);
+                        queue[0] = dude;
                         weights[myHQ.x][myHQ.y] = dude;
                         while(true) {
                         	if (expand(rc)) break;
@@ -47,6 +56,16 @@ public class RobotPlayer {
                         
 					}
 				} else if (rc.getType() == RobotType.SOLDIER) {
+					if (rc.isActive()) {
+						/*if (rc.getLocation().distanceSquaredTo(enemyHQ) < 70) 
+							if (Math.random() < 50) rc.move(randomDir(rc));
+							else rc.move(Direction.EAST);
+						else {
+							Direction dir = rc.getLocation().directionTo(enemyHQ);
+							if (rc.senseMine(rc.getLocation().add(dir)) == Team.NEUTRAL) rc.defuseMine(rc.getLocation().add(dir));
+							else rc.move(dir);
+						}*/
+					}
 				}
 				rc.yield();
 			} catch (Exception e) {
@@ -54,8 +73,14 @@ public class RobotPlayer {
 			}
 		}
 	}
+    private static Direction randomDir(RobotController rc) {
+        Direction dir = Direction.values()[(int)(Math.random()*8)];
+        if(rc.canMove(dir)) return dir;
+        else return randomDir(rc);
+    }
 	private static boolean expand(RobotController rc) {
-		Point square = queue.poll();
+		//Point square = queue.poll();
+		Point square = poll();
 		int x = square.i;
 		int y = square.j;
 		if (enemyHQ.x == x && enemyHQ.y == y) return true;
@@ -64,9 +89,10 @@ public class RobotPlayer {
 				if (!(i == 0 && j == 0) && inMap(x+i, y+j)) {
 					int cost = square.cost + squareCost(x+i, y+j);
 					if (weights[x+i][y+j].cost > cost) {
-						queue.remove(weights[x+i][x+j]);
+						//queue.remove(weights[x+i][x+j]);
 						weights[x+i][y+j].cost = cost;
-						queue.add(weights[x+i][x+j]);
+						//queue.add(weights[x+i][x+j]);
+						add(weights[x+i][y+i]);
 					}
 				}
 		return false;
@@ -79,9 +105,29 @@ public class RobotPlayer {
 		if (x<0 || x>=height || y<0 || y>=width) return false;
 		return true;
 	}
-	/*private static void chase(RobotController rc) {
-		if (rc.senseNearbyGameObjects(rc.getType(), 16, rc.getTeam().opponent())) rc.move(rc.getLocation().directionTo(location))
-	}*/
+	private static Point poll() {
+		Point cur = weights[enemyHQ.x][enemyHQ.y];
+		int index = -1;
+		for (int i = 0; i < queue.length; i++) {
+			if (queue[i] != null)
+			if (queue[i].cost <= cur.cost) {
+				cur = queue[i];
+				index = i;
+			}
+		}
+		queue[index] = null;
+		return cur;
+	}
+	private static void add(Point p) {
+		for (int i = 0; i < queue.length; i++) 
+			if (p.equals(queue[i])) return;
+		if (queue[queueIndex] == null) queue[queueIndex] = p;
+		else {
+			queueIndex = (queueIndex+1) % queue.length;
+			add(p);
+		}
+		
+	}
 	private static class costComparator implements Comparator<Point> {
         public int compare(Point a, Point b) {
             return ((Integer)a.cost).compareTo(b.cost);

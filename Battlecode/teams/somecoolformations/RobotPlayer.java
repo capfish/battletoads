@@ -1,7 +1,7 @@
 package somecoolformations;
 
 import battlecode.common.Direction;
-import battlecode.common.GameConstants;
+import battlecode.common.GameActionException;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -16,18 +16,20 @@ public class RobotPlayer {
             try {
                 if (rc.getType() == RobotType.HQ) {
                     if (rc.isActive()) {
-                        if (Clock.getRoundNum() < 50) rc.researchUpgrade(Upgrade.PICKAXE);
+                        if (Clock.getRoundNum() < 30) rc.researchUpgrade(Upgrade.PICKAXE);
                         // Spawn a soldier
                         else {
+                        	if (Clock.getRoundNum() % 7 == 1) {
                             Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                            if (rc.canMove(dir)) rc.spawn(dir);
+                            if (rc.canMove(dir)) rc.spawn(dir);}
                         }
                     }
 
                 } else if (rc.getType() == RobotType.SOLDIER) {
                     if (rc.isActive()) {
-                    	if (pickaxeSparseMineField(rc) && rc.senseMine(rc.getLocation()) == null) rc.layMine();
-                    	else rc.move(randomDir(rc));
+                    	/*if (pickaxeSparseMineField(rc) && rc.senseMine(rc.getLocation()) == null) rc.layMine();
+                    	else rc.move(randomDir(rc));*/
+                    	if(!gang(rc)) if(Math.random() < 0.3) rc.move(randomDir(rc));
                     }
                 }
                 rc.yield();
@@ -41,9 +43,39 @@ public class RobotPlayer {
         if(rc.canMove(dir)) return dir;
         else return randomDir(rc);
     }
-    private static void gang(RobotController rc) {
-    	Robot[] allied = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 10, rc.getTeam());
-    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 10, rc.getTeam().opponent());
+    private static boolean gang(RobotController rc) throws GameActionException {
+    	Robot[] allied = rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), 2, rc.getTeam());
+    	Robot[] enemy = rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), 2, rc.getTeam().opponent());
+    	if (enemy.length!=0 && allied.length > enemy.length) return true;
+    	
+    	allied = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 10, rc.getTeam());
+    	enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 10, rc.getTeam().opponent());
+    	int[] alliedBins = new int[8];
+    	int[] enemyBins = new int[8];
+    	for (int i = 0; i < 8; i++) 
+    		for (int j = 0; j < allied.length; j++)
+    			if (dir2robo(rc, allied[j]) == Direction.values()[i]) alliedBins[i]++;
+    	for (int i = 0; i < 8; i++) 
+    		for (int j = 0; j < enemy.length; j++)
+    			if (dir2robo(rc, enemy[j]) == Direction.values()[i]) enemyBins[i]++;
+    	for (int i = 0; i < 8; i++)
+    		if (enemyBins[i] > 0 && alliedBins[i] > enemyBins[i]) 
+    			if (rc.canMove(Direction.values()[i])) {
+    				rc.move(Direction.values()[i]);
+    				return true;
+    			}
+    	return false;
+    }
+    private static Direction dir2robo(RobotController rc, Robot robo) throws GameActionException {
+    	return rc.getLocation().directionTo((rc.senseRobotInfo(robo).location));
+    }
+    private static boolean chase(RobotController rc) throws GameActionException {
+    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 4, rc.getTeam().opponent());
+    	if (enemy.length != 0) {
+    		rc.move(dir2robo(rc, enemy[0]));
+    		return true;
+    	}
+    	return false;
     }
     private static boolean sparseMineField(RobotController rc) {
     	if (rc.getLocation().x % 2 == 0 && rc.getLocation().y % 2 == 0) return true;
