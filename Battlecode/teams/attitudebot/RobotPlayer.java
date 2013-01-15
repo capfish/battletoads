@@ -10,22 +10,9 @@ import battlecode.common.Clock;
 import battlecode.common.Upgrade;
 
 public class RobotPlayer {
-	public static MapLocation enemyHQ;
-	public static MapLocation myHQ;
-	public static int mapHeight;
-	public static int mapWidth;
-	public static Team myTeam;
-	public static Team enemyTeam;
-
-	public static void run(RobotController rc) {
-
-		enemyHQ = rc.senseEnemyHQLocation();
-    	myHQ = rc.senseHQLocation();
-    	mapHeight = rc.getMapHeight();
-    	mapWidth = rc.getMapWidth();
-    	myTeam = rc.getTeam();
-    	enemyTeam = myTeam.opponent();
-    	
+	private static MapLocation enemyHQ;
+    public static void run(RobotController rc) {
+    	enemyHQ = rc.senseEnemyHQLocation();
         while (true) {
             try {
             	if (rc.getType() == RobotType.SOLDIER){
@@ -72,7 +59,7 @@ public class RobotPlayer {
 
                  Chasing around little bitches
 
-                 Sweet Rallying and Swarms like bees
+                 Sweet Rallying and Swarms like bees3
 
                  Broadcasting read is only .003 bytecodes!
                  
