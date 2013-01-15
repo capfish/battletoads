@@ -28,7 +28,7 @@ public class soldierCode {
 					travelMode(rc);
 		}
 	}
-
+//check if mines are present before making mines!!!!!
 	/*--------------TRAVEL CODE--------------------*/
 	
 	private static void travelMode(RobotController rc) throws GameActionException
@@ -37,7 +37,7 @@ public class soldierCode {
 		
 		//go to enemy base
 		//Direction dir = myLoc.directionTo(RobotPlayer.enemyHQ);
-
+		int x = 5;
 		Direction dir = myLoc.directionTo(target);
 		if (rc.canMove(dir)) {
 			Team t = rc.senseMine(myLoc.add(dir));
@@ -132,6 +132,8 @@ public class soldierCode {
 	/*--------------MINE CODE--------------------*/
     
     private static boolean mineMode(RobotController rc) throws GameActionException {
+    	if (rc.senseMine(myLoc) == null)
+    		return false;
     	if (rc.hasUpgrade(Upgrade.PICKAXE))
     	{
     		if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 25 && pickaxeMineField(rc))
