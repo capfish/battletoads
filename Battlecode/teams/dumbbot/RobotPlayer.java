@@ -58,6 +58,7 @@ public class RobotPlayer {
                                 rc.move(dir); System.out.println("hello3");
                             }
                         }
+                    }
 
                                         
                         // if (Clock.getRoundNum() >= 250){
