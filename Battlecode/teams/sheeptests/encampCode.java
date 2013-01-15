@@ -84,7 +84,7 @@ public class encampCode {
 	
 	public static boolean withinRange(RobotController rc, MapLocation loc) {
 		if (loc.x < 0 || loc.x >= width || loc.y < 0 || loc.y >= height) return false;
-		if (loc.distanceSquaredTo(rc.getLocation()) <= range) return true;
+		if (loc.distanceSquaredTo(rc.getLocation()) <= rangeS) return true;
 		return false;
 	}
 

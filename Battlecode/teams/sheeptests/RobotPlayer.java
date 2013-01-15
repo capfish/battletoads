@@ -47,7 +47,7 @@ public class RobotPlayer {
 		//MapLocation[] neutralMines = rc.senseMineLocations(rc.getLocation(), 2, Team.NEUTRAL);
 		//MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, rc.getTeam().opponent());
         if (rc.senseEncampmentSquare(rc.getLocation())) {
-        	rc.captureEncampment(RobotType.ARTILLERY);
+        	if (rc.senseCaptureCost() < rc.getTeamPower()) rc.captureEncampment(RobotType.ARTILLERY);
         	return;
         }
         MapLocation[] nearbyEncampments;
