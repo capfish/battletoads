@@ -10,9 +10,22 @@ import battlecode.common.Clock;
 import battlecode.common.Upgrade;
 
 public class RobotPlayer {
-	private static MapLocation enemyHQ;
-    public static void run(RobotController rc) {
-    	enemyHQ = rc.senseEnemyHQLocation();
+	public static MapLocation enemyHQ;
+	public static MapLocation myHQ;
+	public static int mapHeight;
+	public static int mapWidth;
+	public static Team myTeam;
+	public static Team enemyTeam;
+
+	public static void run(RobotController rc) {
+
+		enemyHQ = rc.senseEnemyHQLocation();
+    	myHQ = rc.senseHQLocation();
+    	mapHeight = rc.getMapHeight();
+    	mapWidth = rc.getMapWidth();
+    	myTeam = rc.getTeam();
+    	enemyTeam = myTeam.opponent();
+    	
         while (true) {
             try {
             	if (rc.getType() == RobotType.SOLDIER){
