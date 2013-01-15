@@ -15,18 +15,13 @@ import battlecode.common.Upgrade;
  */
 
 public class RobotPlayer {
+    private static MapLocation enemyHQ;
     public static void run(RobotController rc) {
+        enemyHQ = rc.senseEnemyHQLocation();
         while (true) {
             try {
                 if (rc.getType() == RobotType.HQ) {
-                    if (rc.isActive()) {
-                        if (Clock.getRoundNum() < 80) rc.researchUpgrade(Upgrade.PICKAXE);
-                        // Spawn a soldier
-                        else {
-                            Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());//randomDir(rc);
-                            if (rc.canMove(dir)) rc.spawn(dir);
-                        }
-                    }
+                    dumbbot.hqCode.hqRun(rc, enemyHQ);
 
                 } else if (rc.getType() == RobotType.SOLDIER) {
                     if (rc.isActive()) {
@@ -96,10 +91,11 @@ public class RobotPlayer {
                         // Write the number 5 to a position on the message board corresponding to the robot's ID
                         rc.broadcast(rc.getRobot().getID()%GameConstants.BROADCAST_MAX_CHANNELS, 5);
                     }
+                    rc.yield();
                 }
 
                 // End turn
-                rc.yield();
+//                rc.yield();
             } catch (Exception e) {
                 e.printStackTrace();
             }
