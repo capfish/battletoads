@@ -14,12 +14,16 @@ public class RobotPlayer {
 	public static MapLocation myHQ;
 	public static Team myTeam;
 	public static Team enemyTeam;
+	public static int mapWidth;
+	public static int mapHeight;
 	
     public static void run(RobotController rc) {
     	enemyHQ = rc.senseEnemyHQLocation();
     	myHQ = rc.senseHQLocation();
     	myTeam = rc.getTeam();
     	enemyTeam = myTeam.opponent();
+    	mapWidth = rc.getMapWidth();
+    	mapHeight = rc.getMapHeight();
     	
         while (true) {
             try {
