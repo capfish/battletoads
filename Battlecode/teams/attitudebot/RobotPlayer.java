@@ -10,14 +10,16 @@ import battlecode.common.Clock;
 import battlecode.common.Upgrade;
 
 public class RobotPlayer {
+	private static MapLocation enemyHQ;
     public static void run(RobotController rc) {
+    	enemyHQ = rc.senseEnemyHQLocation();
         while (true) {
             try {
             	if (rc.getType() == RobotType.SOLDIER){
             		attitudebot.soldierCode.soldierRun(rc);
             	}
             	else if (rc.getType() == RobotType.HQ){
-            		attitudebot.hqCode.hqRun(rc);
+            		attitudebot.hqCode.hqRun(rc, enemyHQ);
             	}
             	else if (rc.getType() == RobotType.ARTILLERY){
             		attitudebot.encampCode.artilleryRun(rc);
