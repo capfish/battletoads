@@ -140,7 +140,7 @@ public class RobotPlayer {
 			add(p);
 		}
 	}
-	private static void
+	//private static void
 	
 	private static class Point {
 		public int i;
