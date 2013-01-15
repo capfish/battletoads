@@ -57,7 +57,7 @@ public class RobotPlayer {
 
                  Chasing around little bitches
 
-                 Sweet Rallying and Swarms like bees3
+                 Sweet Rallying and Swarms like bees
 
                  Broadcasting read is only .003 bytecodes!
                  
