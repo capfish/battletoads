@@ -132,7 +132,7 @@ public class soldierCode {
 	/*--------------MINE CODE--------------------*/
     
     private static boolean mineMode(RobotController rc) throws GameActionException {
-    	if (rc.senseMine(myLoc) == null)
+    	if (rc.senseMine(myLoc) != null)
     		return false;
     	if (rc.hasUpgrade(Upgrade.PICKAXE))
     	{
