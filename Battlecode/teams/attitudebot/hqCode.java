@@ -21,7 +21,9 @@ public class hqCode {
 				else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
 				else rc.researchUpgrade(Upgrade.NUKE);
 			} else {
-				rc.spawn(randomDir(rc));
+				if (Math.random() < 0.2) rc.spawn(randomDir(rc));
+				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
+				else rc.spawn(randomDir(rc));
 			}
 		}
 	}
