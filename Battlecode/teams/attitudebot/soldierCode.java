@@ -65,7 +65,7 @@ public class soldierCode {
 	/*--------------COLONIZE CODE--------------------*/
 
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
-    	if (rc.senseEncampmentSquare(myLoc))
+    	if (rc.senseEncampmentSquare(myLoc)) //if encamp is already ours, don't get it!
     	{
     		if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64)
     			rc.captureEncampment(RobotType.SHIELDS);
