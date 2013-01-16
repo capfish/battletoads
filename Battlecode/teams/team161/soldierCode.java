@@ -1,4 +1,4 @@
-package attitudebot;
+package team161;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
