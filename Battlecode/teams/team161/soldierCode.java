@@ -20,7 +20,7 @@ public class soldierCode {
 			myLoc = rc.getLocation();
 			target = RobotPlayer.enemyHQ;
 			if (rc.isActive()) {
-				Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 100, RobotPlayer.enemyTeam);
+				Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 49, RobotPlayer.enemyTeam);
 				if (enemy.length > 0) 				//If nearby enemies: ATTACK MODE
 					attackMode(rc, enemy);
 				else if (!mineMode(rc))
@@ -38,8 +38,8 @@ public class soldierCode {
 		//ALTERNATE: get a command from the HQ.
 		
 		//go to enemy base
-		rc.setIndicatorString(3, "travel mode");
-		rc.setIndicatorString(4, "target " + target);
+		rc.setIndicatorString(0, "travel mode");
+		rc.setIndicatorString(1, "target " + target);
 
 		Direction dir = myLoc.directionTo(target);
 		if (!rc.canMove(dir)) dir = randomDir(rc, 10);
@@ -67,19 +67,39 @@ public class soldierCode {
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
 		rc.setIndicatorString(0, "colonize mode");
     	if (rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
-    		if (rc.senseEncampmentSquare(myLoc.add(prev)) && prev!=null)
+    		if (rc.senseEncampmentSquare(myLoc.add(prev)) && prev!=null) {
     			if (rc.canMove(prev)) {
     				rc.move(prev);
     				return true;
-    			}
+    			} else {
+        			Direction left = prev.rotateLeft();
+        			if (rc.senseEncampmentSquare(myLoc.add(left))) {
+        				if (rc.canMove(left)) {
+        					rc.move(left);
+        					prev = left;
+        					return true;
+        				} else {
+        					Direction right = prev.rotateRight();
+                			if (rc.senseEncampmentSquare(myLoc.add(right)) && rc.canMove(right)) {
+                				rc.move(right);
+                				prev = right;
+                				return true;
+                			}
+        				}
+        			}
+        		}
+    		} 
         	if (rc.senseCaptureCost() > rc.getTeamPower()) {
         		rc.setIndicatorString(1, "not enough power");
         		return false;
         	}
         	//broadcast that its colonizing shit so people don't try to go to it.
-        	if (surrounded(rc, myLoc)) rc.captureEncampment(RobotType.MEDBAY);
-        	else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64) rc.captureEncampment(RobotType.SHIELDS);
-    		else if (myLoc.distanceSquaredTo(RobotPlayer.enemyHQ) < 64 || RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ))
+        	if (rc.getTeamPower() < 2.1*rc.senseCaptureCost()) rc.captureEncampment(RobotType.GENERATOR);
+        	else if (surrounded(rc, myLoc)) rc.captureEncampment(RobotType.MEDBAY);
+        	else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64) rc.captureEncampment(RobotType.ARTILLERY);
+    		else if (myLoc.distanceSquaredTo(RobotPlayer.enemyHQ) < 64) rc.captureEncampment(RobotType.ARTILLERY);
+    		else if (RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ)
+    			  && RobotPlayer.enemyHQ.directionTo(myLoc) == RobotPlayer.enemyHQ.directionTo(RobotPlayer.myHQ))
     			rc.captureEncampment(RobotType.ARTILLERY);
     		else rc.captureEncampment(RobotType.GENERATOR);
     		return true;
@@ -113,8 +133,8 @@ public class soldierCode {
     
     private static void attackMode(RobotController rc, Robot[] enemies) throws GameActionException {
 		rc.setIndicatorString(0, "attack mode");
-
-    	chase(rc);
+    	if (!chase(rc)) if (rc.canMove(prev)) rc.move(prev);
+    	
     }
     
     private static boolean gang(RobotController rc) throws GameActionException {
@@ -147,7 +167,10 @@ public class soldierCode {
     	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), RobotType.SOLDIER.sensorRadiusSquared, rc.getTeam().opponent());
     	if (enemy.length != 0) {
     		Direction dir = dir2robo(rc, enemy[0]);
-    		if (rc.canMove(dir)) rc.move(dir);
+    		if (rc.canMove(dir)) {
+    			rc.move(dir);
+    			prev = dir;
+    		}
     		return true;
     	}
     	return false;
@@ -170,11 +193,10 @@ public class soldierCode {
     			rc.layMine();
     			return true;
     		}
-    		else if (pickaxeSparseMineField(rc))
+    		else if (pickaxeMineField(rc))
     		{
-    			//rc.layMine();
-    			//return true;
-    			return false;
+    			rc.layMine();
+    			return true;
     		}    	
     	}
     	else if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 25 && sparseMineField(rc))

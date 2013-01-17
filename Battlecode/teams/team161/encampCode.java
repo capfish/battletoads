@@ -106,7 +106,10 @@ public class encampCode {
 	}
 
 	public static void generatorRun(RobotController rc) {
-		//UNUSED
+		if (Clock.getRoundNum() % 100 == 0)
+			if (rc.getTeamPower() > rc.senseCaptureCost() * 3 && 
+				(rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), 4, rc.getTeam()).length > 2) &&
+				(rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), 4, rc.getTeam().opponent()).length == 0)) rc.suicide();
 	}
 
 }
