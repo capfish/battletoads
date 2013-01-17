@@ -12,20 +12,22 @@ import battlecode.common.Upgrade;
 public class soldierCode {
 	private static MapLocation myLoc;
 	private static MapLocation target;
+	private static Direction prev;
+
 
 	public static void soldierRun(RobotController rc) throws GameActionException {
-		myLoc = rc.getLocation();
-		target = RobotPlayer.enemyHQ;
-
-		if (rc.isActive())
-		{
-			//If nearby enemies: ATTACK MODE
-			Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 100, RobotPlayer.enemyTeam);
-			if (enemy.length > 0)
-				attackMode(rc, enemy);
-			else if (!mineMode(rc))
-				if (!colonizeMode(rc))
-					travelMode(rc);
+		while (true) {
+			myLoc = rc.getLocation();
+			target = RobotPlayer.enemyHQ;
+			if (rc.isActive()) {
+				Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 100, RobotPlayer.enemyTeam);
+				if (enemy.length > 0) 				//If nearby enemies: ATTACK MODE
+					attackMode(rc, enemy);
+				else if (!mineMode(rc))
+					if (!colonizeMode(rc))
+						travelMode(rc);
+			}
+			rc.yield();
 		}
 	}
 //check if mines are present before making mines!!!!!
@@ -36,22 +38,25 @@ public class soldierCode {
 		//ALTERNATE: get a command from the HQ.
 		
 		//go to enemy base
-		//Direction dir = myLoc.directionTo(RobotPlayer.enemyHQ);
-		rc.setIndicatorString(0, "travel mode");
-		rc.setIndicatorString(1, "target " + target);
+		rc.setIndicatorString(3, "travel mode");
+		rc.setIndicatorString(4, "target " + target);
 
 		Direction dir = myLoc.directionTo(target);
-		if (!rc.canMove(dir)) dir = randomDir(rc);
+		if (!rc.canMove(dir)) dir = randomDir(rc, 10);
 		Team t = rc.senseMine(myLoc.add(dir));
 		if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam)
 			rc.defuseMine(myLoc.add(dir));
-		else rc.move(dir);
+		else if (dir != Direction.NONE) {
+			rc.move(dir);
+			prev = dir;
+		}
 	}
 	
-    private static Direction randomDir(RobotController rc) {
+    private static Direction randomDir(RobotController rc, int depth) {
+    	if (depth == 0) return Direction.NONE;
         Direction dir = Direction.values()[(int)(Math.random()*8)];
         if(rc.canMove(dir)) return dir;
-        else return randomDir(rc);
+        else return randomDir(rc, depth-1);
     }
 
 	/*--------------TRAVEL CODE END--------------------*/
@@ -61,31 +66,44 @@ public class soldierCode {
 
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
 		rc.setIndicatorString(0, "colonize mode");
-    	if (rc.senseEncampmentSquare(myLoc)) //if encamp is already ours, don't get it!
-    	{
-    		if (rc.senseCaptureCost() > rc.getTeamPower()) return false;
-    		if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64)
-    			rc.captureEncampment(RobotType.SHIELDS);
+    	if (rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
+    		if (rc.senseEncampmentSquare(myLoc.add(prev)) && prev!=null)
+    			if (rc.canMove(prev)) {
+    				rc.move(prev);
+    				return true;
+    			}
+        	if (rc.senseCaptureCost() > rc.getTeamPower()) {
+        		rc.setIndicatorString(1, "not enough power");
+        		return false;
+        	}
+        	//broadcast that its colonizing shit so people don't try to go to it.
+        	if (surrounded(rc, myLoc)) rc.captureEncampment(RobotType.MEDBAY);
+        	else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64) rc.captureEncampment(RobotType.SHIELDS);
     		else if (myLoc.distanceSquaredTo(RobotPlayer.enemyHQ) < 64 || RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ))
     			rc.captureEncampment(RobotType.ARTILLERY);
-    		else
-    			rc.captureEncampment(RobotType.GENERATOR);
+    		else rc.captureEncampment(RobotType.GENERATOR);
     		return true;
     	}
     	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 64, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
-    	soldierCode.target = encamps[0];
-    	return false;
-    	//return setTargetAccessible(rc, encamps);
-    }
-    private static boolean setTargetAccessible(RobotController rc, MapLocation[] encamps) {
-    	for (MapLocation encamp: encamps) 
-    		if (rc.senseNearbyGameObjects(Robot.class, encamp, 2, RobotPlayer.myTeam).length < 8) {
-    			soldierCode.target = encamp; 
-    			return true;
+    	int minDist = 10000;
+    	MapLocation minEncamp = encamps[0];
+    	for (MapLocation encamp: encamps) {
+    		int dist = myLoc.distanceSquaredTo(encamp);
+    		if (dist < minDist) {
+    			minDist = dist;
+    			minEncamp = encamp;
     		}
+    	}
+    	soldierCode.target = minEncamp;
     	return false;
-    	
+    }
+    private static boolean surrounded(RobotController rc, MapLocation loc) {
+    	int sides = 0;
+    	for (int i = 0; i < 8; i++)
+    		if (rc.senseEncampmentSquare(loc.add(Direction.values()[i]))) sides++;
+    	if (sides > 7) return true;
+    	return false;
     }
     
 	/*--------------COLONIZE CODE END--------------------*/
@@ -154,8 +172,9 @@ public class soldierCode {
     		}
     		else if (pickaxeSparseMineField(rc))
     		{
-    			rc.layMine();
-    			return true;
+    			//rc.layMine();
+    			//return true;
+    			return false;
     		}    	
     	}
     	else if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 25 && sparseMineField(rc))
