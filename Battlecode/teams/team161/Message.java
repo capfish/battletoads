@@ -98,7 +98,7 @@ public class Message {
 		return x + ":" + y;
 	}
 	private int calcChannel(int offset) {
-		return ((Clock.getRoundNum() * MULT) % 10000) + offset;
+		return ((Clock.getRoundNum() * MULT) % 65535) + offset;
 	}
 	public void reset() {
 		r_channel = 0;
