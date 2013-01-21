@@ -74,9 +74,12 @@ public class encampCode {
 				}*/
 				if (damage > 0) {
 					MapLocation target = rc.getLocation().add(x - range, y - range);
-					rc.attackSquare(target);
-					rc.setIndicatorString(0, "attacking" + target);
-					rc.yield();
+					if (rc.isActive())
+					{
+						rc.attackSquare(target);
+						rc.setIndicatorString(0, "attacking" + target);
+						rc.yield();
+					}
 				} else rc.setIndicatorString(0, "not attacking");
 			}
 			rc.yield();
