@@ -10,7 +10,7 @@ import battlecode.common.RobotController;
 
 /* So it seems like each channel can have at most 1 int in it.
  * If another int gets written, then the original one is overwritten.
- * For long messages, the only way seems to be writing RealMessagingon different channels.
+ * For long messages, the only way seems to be writing on different channels.
  * lsb = isLocation
  */
 
@@ -38,7 +38,7 @@ public class Message {
 			int channel = calcChannel(s_channel);
 			for (int i = 0; i < REDUNDANCY; i++) rc.broadcast(channel + i*MULT, msg);
 			s_channel = s_channel + 1;
-//q			System.out.println(channel);
+			//System.out.println("sending channel " + channel);
 		} catch (Exception e) {}
 	}
 	
@@ -75,7 +75,7 @@ public class Message {
 			int msg = rc.readBroadcast(n);
 			int msg_sum = msg % p;
 			if (msg_sum != q && (p+msg_sum) != q) {
-//				System.out.ln("got " + msg_sum + "-----------------------------------------------------------------------------");
+				//System.out.println("got " + msg_sum + " on channel " + n);
 				if (counter == 0)
 					return "corrupted";	//checks to see if its bad. if so, return null.
 				else return getChannel(n + MULT, counter-1);
@@ -90,16 +90,15 @@ public class Message {
 	private static String decrypt(int msg) {
 		return Integer.toBinaryString(msg/shift);
 	}
-	
 	private static String decryptLoc(int msg) {
 		msg = (msg-msb)/shift;
 		int y = msg % loc_size;
 		msg = msg/loc_size;
 		int x = msg % loc_size;
-		return "x: " + x + " y: " + y;
+		return x + ":" + y;
 	}
 	private int calcChannel(int offset) {
-		return ((Clock.getRoundNum() * MULT) % 10000) + offset;
+		return ((Clock.getRoundNum() * MULT) % 65535) + offset;
 	}
 	public void reset() {
 		r_channel = 0;
