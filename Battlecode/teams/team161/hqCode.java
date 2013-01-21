@@ -7,6 +7,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
+import battlecode.engine.instrumenter.RobotMonitor;
 
 public class hqCode {
 	private static int width, height;
@@ -43,20 +44,62 @@ public class hqCode {
 					msg.send("1");
 					msg.sendLoc(encamp);
 				}*/
-				msg.reset();
+			
+			//find out which sector the end of our mines is in
+			//sectors are:
+//			System.out.println(Clock.getBytecodesLeft());
+			MapLocation frontLines = whichSector(rc);
+//			System.out.println(Clock.getBytecodesLeft());
 
-				if (rc.getTeamPower() < 50 || Clock.getRoundNum() > 1000) {
-					msg.send("10");
-					msg.sendLoc(rc.senseEnemyHQLocation());	
-					rc.setIndicatorString(0, "target = eHQ");
-				}
-				else {//if (encamps.length < 5) {
-					msg.send("10");
-					msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/10));
-					rc.setIndicatorString(0, "target = rally");
-				}
+			msg.reset();
+			
+			if (rc.getTeamPower() < 50 || Clock.getRoundNum() > 1000) {
+				msg.send("10");
+				msg.sendLoc(rc.senseEnemyHQLocation());	
+				rc.setIndicatorString(0, "target = eHQ");
+			}
+			else {//if (encamps.length < 5) {
+				msg.send("10");
+				msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/10));
+				rc.setIndicatorString(0, "target = rally");
+			}
 			
 			rc.yield();
+		}
+	}
+	
+	public static MapLocation whichSector(RobotController rc)
+	{
+		int diagonal = RobotPlayer.myHQ.distanceSquaredTo(RobotPlayer.enemyHQ);
+		int delta = (int)(diagonal/5);
+		int deltaX = (int)(width/5);
+		int deltaY = (int)(height/5);
+		//check middle section
+		MapLocation sect3 = new MapLocation(width/2, height/2);
+		MapLocation sect2 = new MapLocation(sect3.x - deltaX, sect3.y - deltaY);
+		MapLocation sect1 = new MapLocation(sect2.x - deltaX, sect2.y - deltaY);
+		
+		int sect3Count = rc.senseMineLocations(sect3, delta, RobotPlayer.myTeam).length;
+		int sect2Count = rc.senseMineLocations(sect2, delta, RobotPlayer.myTeam).length;
+		if (sect3Count == 0)
+			if (sect2Count > 0)
+				return sect2;
+			else
+				return sect1;
+		else
+		{
+			MapLocation sect4 = new MapLocation(sect3.x + deltaX, sect3.y + deltaY);
+			int sect4Count = rc.senseMineLocations(sect4, delta, RobotPlayer.myTeam).length;
+			if (sect4Count == 0)
+				return sect3;
+			else
+			{
+				MapLocation sect5 = new MapLocation(sect4.x + deltaX, sect4.y + deltaY);
+				int sect5Count = rc.senseMineLocations(sect5, delta, RobotPlayer.myTeam).length;
+				if (sect5Count == 0)
+					return sect4;
+				return sect5;
+			}
 		}
 	}
 }
