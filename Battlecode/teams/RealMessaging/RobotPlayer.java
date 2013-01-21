@@ -30,16 +30,14 @@ public class RobotPlayer {
 							
 					
 				} else if (rc.getType() == RobotType.SOLDIER) {
-					if (rc.isActive()) {
-						rc.move(rc.getLocation().directionTo(rc.senseEnemyHQLocation()));
-					}
+					if (rc.isActive()) rc.move(rc.getLocation().directionTo(rc.senseEnemyHQLocation()));
 					msg.send(2, new MapLocation(2,2));
-					int i = -1;
+					int i = 0;
 					while (true) {
+						i--;
 						msg.receive(i);
 						if (msg.command == -1) break;
 						System.out.println(msg.command + " " + msg.xloc + "," + msg.yloc);
-						i--;
 					}
 				}
 

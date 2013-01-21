@@ -44,7 +44,7 @@ public class Message {
 	public void send(int message, MapLocation loc) throws GameActionException {
 		int temp = ((((loc.x << loc_size) + loc.y) << msg_size) + message) << shift;
 		int msg = pad(temp);
-		int channel = channel_origin - s_channel + ID;
+		int channel = (channel_origin - s_channel + ID) % NUM_CHANNELS;
 		rc.broadcast(channel, msg);
 		//System.out.println("sending on channel " + channel);
 		s_channel ++;
@@ -64,12 +64,11 @@ public class Message {
 		if (ID == -1) {
 			channel -= MULT; //this might need to get fixed in case of negative shits. prolly not tho.
 			if (channel < 0) {
-				System.out.println("HHHHHHHHHHHHHHHHHHHHH");
 				channel = NUM_CHANNELS + channel;
 			}
 			round --;
 		}
-		int msg = rc.readBroadcast(channel) - round;
+		int msg = rc.readBroadcast(channel % NUM_CHANNELS) - round;
 		int msg_sum = msg % p;
 		if (msg_sum != q && (p+msg_sum) != q) command = -1;	//checks to see if its bad. if so, return -1.
 		else {
