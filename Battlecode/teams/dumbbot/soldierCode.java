@@ -56,8 +56,7 @@ public class soldierCode {
         Team t = rc.senseMine(myLoc.add(dir));
         if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
             rc.defuseMine(myLoc.add(dir));
-            rc.setIndicatorString(1, "target " + target + " defusing in direction " + dir);
-
+            //            rc.setIndicatorString(1, "target " + target + " defusing in direction " + dir);
         }
         else if (dir != Direction.NONE) {
             rc.move(dir);
@@ -83,10 +82,16 @@ public class soldierCode {
 
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
         rc.setIndicatorString(0, "colonize mode");
+        if (population < 7) return false;
     	if (rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
             if (prev != null) {
                 for (int i = 0; i <= 2; i++) {
                     Direction dir = Direction.values()[(prev.ordinal()+i)%8];
+                    Team t = rc.senseMine(myLoc.add(dir));
+                    if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
+                        rc.defuseMine(myLoc.add(dir));
+                        rc.yield();
+                    }
                     if (rc.senseEncampmentSquare(myLoc.add(dir))) {
                         if (rc.canMove(dir)) {
                             rc.move(dir);
@@ -95,6 +100,11 @@ public class soldierCode {
                         }
                     }
                     dir = Direction.values()[(prev.ordinal()-i+8)%8];
+                    t = rc.senseMine(myLoc.add(dir));
+                    if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
+                        rc.defuseMine(myLoc.add(dir));
+                        rc.yield();
+                    }
                     if (rc.senseEncampmentSquare(myLoc.add(dir))) {
                         if (rc.canMove(dir)) {
                             rc.move(dir);
@@ -106,7 +116,7 @@ public class soldierCode {
             }
             return capture(rc);
     	}
-    	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 64, Team.NEUTRAL);
+    	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 81, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
     	/*int minDist = 10000;
           MapLocation minEncamp = encamps[0];
@@ -130,7 +140,7 @@ public class soldierCode {
     	return false;
     }
     private static boolean capture(RobotController rc) throws GameActionException{
-    	if (rc.senseCaptureCost() > rc.getTeamPower() || population < 7) {
+    	if (rc.senseCaptureCost() > rc.getTeamPower()) {
             rc.setIndicatorString(1, "not enough power");
             return false;
         }
@@ -236,7 +246,8 @@ public class soldierCode {
                                                       || myLoc.directionTo(RobotPlayer.enemyHQ) == myLoc.directionTo(RobotPlayer.myHQ).opposite().rotateLeft()
                                                       || myLoc.directionTo(RobotPlayer.enemyHQ) == myLoc.directionTo(RobotPlayer.myHQ).opposite().rotateRight()
                                                       || myLoc.directionTo(RobotPlayer.myHQ) == myLoc.directionTo(RobotPlayer.enemyHQ).opposite().rotateLeft()
-                                                      || myLoc.directionTo(RobotPlayer.myHQ) == myLoc.directionTo(RobotPlayer.enemyHQ).opposite().rotateRight()))
+                                                      || myLoc.directionTo(RobotPlayer.myHQ) == myLoc.directionTo(RobotPlayer.enemyHQ).opposite().rotateRight())
+                             && !rc.senseEncampmentSquare(myLoc))
                         {
                             rc.layMine();
                             return true;

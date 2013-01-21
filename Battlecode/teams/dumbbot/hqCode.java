@@ -1,12 +1,6 @@
 package dumbbot;
 
-import battlecode.common.Clock;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.Team;
-import battlecode.common.Upgrade;
+import battlecode.common.*;
 
 public class hqCode {
     private static int width, height;
@@ -53,14 +47,14 @@ public class hqCode {
 				}*/
 				msg.reset();
 
-				if (rc.getTeamPower() < 50 || Clock.getRoundNum() > 1000) {
+				if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 1000) {
 					msg.send("10");
 					msg.sendLoc(rc.senseEnemyHQLocation());	
 					rc.setIndicatorString(0, "target = eHQ");
 				}
 				else {//if (encamps.length < 5) {
 					msg.send("10");
-					msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/10));
+					msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/8));
 					rc.setIndicatorString(0, "target = rally");
 				}
 			
