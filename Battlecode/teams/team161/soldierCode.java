@@ -7,7 +7,6 @@ public class soldierCode {
 	private static MapLocation target;
 	private static Direction prev;
 	private static Message msg;
-	private static int population;
 
 
 	public static void soldierRun(RobotController rc) throws GameActionException {
@@ -15,14 +14,12 @@ public class soldierCode {
 		target = RobotPlayer.enemyHQ;
 		while (true) {
 			myLoc = rc.getLocation();
-			population = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 10000, RobotPlayer.myTeam).length;
-			//target = RobotPlayer.enemyHQ;
 			msg.reset();
 			rc.setIndicatorString(0, "");
 			rc.setIndicatorString(1, "");
 			msg.receive(-1);
 			if (msg.action == Action.RALLY_AT) {
-				target = new MapLocation(msg.xloc, msg.yloc);
+				target = msg.location;
 			}
 	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), RobotType.SOLDIER.sensorRadiusSquared, rc.getTeam().opponent());
 			if (enemy.length > 1) msg.send(Action.ENEMY, myLoc);
@@ -81,7 +78,6 @@ public class soldierCode {
 
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
 		rc.setIndicatorString(0, "colonize mode");
-		if (population < 7) return false;
     	if (rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
     		if (prev != null) {
     			for (int i = 0; i <= 1; i++) {
@@ -214,8 +210,7 @@ public class soldierCode {
     private static boolean mineMode(RobotController rc) throws GameActionException {
 		rc.setIndicatorString(0, "mine mode");
 
-    	if (population < 7 || rc.senseMine(myLoc) != null)
-    		return false;
+    	if (rc.senseMine(myLoc) != null) return false;
     	if (rc.hasUpgrade(Upgrade.PICKAXE))
     	{
     		if (rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 25 && pickaxeMineField(rc))

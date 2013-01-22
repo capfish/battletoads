@@ -10,8 +10,13 @@ import battlecode.common.Upgrade;
 import battlecode.engine.instrumenter.RobotMonitor;
 
 public class hqCode {
-	private static int width, height;
+	private static int width, height, area, num_suppliers, num_generators;
 	private static Team spawnMine;
+	private static MapLocation[] encamps;
+	private static Message msg;
+	private static MapLocation myHQ, enemyHQ;
+	private static Team myTeam, opponent;
+
     private static Direction randomDir(RobotController rc, int depth) {
     	if ( depth == 0 ) return null;
         Direction dir = Direction.values()[(int)(Math.random()*8)];
@@ -19,12 +24,17 @@ public class hqCode {
         else return randomDir(rc, depth -1);
     }
 
-	public static void hqRun(RobotController rc, MapLocation enemyHQ) throws GameActionException {
+	public static void hqRun(RobotController rc) throws GameActionException {
 		width = rc.getMapWidth();
 		height = rc.getMapHeight();
-		Message msg = new Message(rc);
-		int num_suppliers, num_generators;
+		area = height*width;
+		encamps = rc.senseEncampmentSquares(rc.getLocation(), 5000, Team.NEUTRAL);
+		msg = new Message(rc);
 		num_suppliers = num_generators = 0;
+		myHQ = rc.senseHQLocation();
+		enemyHQ = rc.senseEnemyHQLocation();
+		myTeam = rc.getTeam();
+		opponent = rc.getTeam().opponent();
 
 		while (true) {
 			if (rc.isActive()) {
@@ -36,9 +46,9 @@ public class hqCode {
 					if (Math.random() < 0.6 && !rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 					else {
 						Direction dir = randomDir(rc, 15);
-						spawnMine = rc.senseMine(RobotPlayer.myHQ.add(dir));
+						spawnMine = rc.senseMine(myHQ.add(dir));
 						if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
-						else if (spawnMine == RobotPlayer.enemyTeam || spawnMine == Team.NEUTRAL)
+						else if (spawnMine == opponent || spawnMine == Team.NEUTRAL)
                         {
                             dir = randomDir(rc, 15);
                             if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
@@ -97,6 +107,7 @@ public class hqCode {
 				msg.send(Action.RALLY_AT, rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
 				rc.setIndicatorString(0, "target = rally");
 			}
+			if ((area < 400 || encamps.length < area) && Clock.getRoundNum() < 80)
 			
 			rc.yield();
 		}
@@ -104,7 +115,7 @@ public class hqCode {
 	
 	public static MapLocation whichSector(RobotController rc)
 	{
-		int diagonal = RobotPlayer.myHQ.distanceSquaredTo(RobotPlayer.enemyHQ);
+		int diagonal = myHQ.distanceSquaredTo(enemyHQ);
 		int delta = (int)(diagonal/5);
 		int deltaX = (int)(width/5);
 		int deltaY = (int)(height/5);
@@ -113,8 +124,8 @@ public class hqCode {
 		MapLocation sect2 = new MapLocation(sect3.x - deltaX, sect3.y - deltaY);
 		MapLocation sect1 = new MapLocation(sect2.x - deltaX, sect2.y - deltaY);
 		
-		int sect3Count = rc.senseMineLocations(sect3, delta, RobotPlayer.myTeam).length;
-		int sect2Count = rc.senseMineLocations(sect2, delta, RobotPlayer.myTeam).length;
+		int sect3Count = rc.senseMineLocations(sect3, delta, myTeam).length;
+		int sect2Count = rc.senseMineLocations(sect2, delta, myTeam).length;
 		if (sect3Count == 0)
 			if (sect2Count > 0)
 				return sect2;
@@ -123,13 +134,13 @@ public class hqCode {
 		else
 		{
 			MapLocation sect4 = new MapLocation(sect3.x + deltaX, sect3.y + deltaY);
-			int sect4Count = rc.senseMineLocations(sect4, delta, RobotPlayer.myTeam).length;
+			int sect4Count = rc.senseMineLocations(sect4, delta, myTeam).length;
 			if (sect4Count == 0)
 				return sect3;
 			else
 			{
 				MapLocation sect5 = new MapLocation(sect4.x + deltaX, sect4.y + deltaY);
-				int sect5Count = rc.senseMineLocations(sect5, delta, RobotPlayer.myTeam).length;
+				int sect5Count = rc.senseMineLocations(sect5, delta, myTeam).length;
 				if (sect5Count == 0)
 					return sect4;
 				return sect5;
