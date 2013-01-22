@@ -44,7 +44,7 @@ public class hqCode {
 		while (true) {
 			roundsTillCaptured --;
 			if (rc.isActive()) {
-				if (rc.getTeamPower() < 50) {
+				if (rc.getTeamPower() < 60) {
 					if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 					//else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
 					else rc.researchUpgrade(Upgrade.NUKE);
@@ -88,17 +88,12 @@ public class hqCode {
 						num_suppliers ++;
 						msg.send(Action.CAP, msg.location);
 					}
-					else if (msg.action == Action.CAP) {
-						msg.send(Action.CAP, msg.location);
-					}
-					else if (msg.action == Action.MINE) {
-						msg.send(Action.MINE, msg.location);
-					}
 					else if (msg.action == Action.DEFUSING) {
 						msg.send(Action.DEFUSING, msg.location);
 					}
 					else if (msg.action == Action.CAPTURING) {
 						roundsTillCaptured = 25;
+						msg.send(Action.CAPTURING, msg.location);
 					}
 				}
 			}
@@ -112,7 +107,12 @@ public class hqCode {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
 				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 2); //make these numbers based on #allies later
 				else if (enemies.length > 7) rally_point.add(dir2enemyHQ, -2);
+				msg.send(Action.RALLY_AT, rally_point);
+				if (rc.senseEncampmentSquares(rally_point, 100, Team.NEUTRAL).length < 2) {
+					//tell soldiers about faraway encamps.
+				}
 			}
+			msg.send(Action.GEN_SUP, new MapLocation( num_suppliers, num_generators ));
 			rc.yield();
 		}
 	}
