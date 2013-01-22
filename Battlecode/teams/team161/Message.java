@@ -30,8 +30,7 @@ public class Message {
 	private static int ymask = 0x1FC; //0b0000000111111100;
 	private static int mmask = 0x3; //0b0000000000000011;
 	public Action action;
-	public int xloc;
-	public int yloc;
+	public MapLocation location;
 	Message(RobotController rc) {
 		if (rc.getType() == RobotType.HQ) ID = -1;
 		else ID = rc.getRobot().getID() % 101;
@@ -74,8 +73,9 @@ public class Message {
 		else {
 			msg = msg >> shift;
 			action = Action.values()[mmask & msg];
-			yloc = (ymask & msg) >> msg_size;
-			xloc = (xmask & msg) >> (msg_size+loc_size);
+			int y = (ymask & msg) >> msg_size;
+			int x = (xmask & msg) >> (msg_size+loc_size);
+			location = new MapLocation(x, y);
 		}
 		//System.out.println("receiving on channel " + channel);
 	}

@@ -47,14 +47,6 @@ public class hqCode {
                     else rc.spawn(dir);
 					}
 				}
-				for (int i = 0; i < 101; i++) {
-					msg.receive(i);
-					if (msg.action != null) {
-						if (msg.action == Action.CAP_GEN) num_generators ++;
-					}
-					
-				}
-				
 			}
 				//MapLocation[] encamps = rc.senseEncampmentSquares(rc.getLocation(), (width*height)/4, Team.NEUTRAL);
 				/*for (MapLocation encamp: encamps) {
@@ -74,9 +66,26 @@ public class hqCode {
 				msg.receive(i);
 				if (msg.action != null) {
 					if (msg.action == Action.ENEMY) {
-						enemyloc = new MapLocation(msg.xloc, msg.yloc);
+						enemyloc = msg.location;
 						rc.setIndicatorString(1, "see enemy cluster near " + enemyloc);
 						break;
+					}
+					else if (msg.action == Action.CAP_GEN) {
+						num_generators ++;
+						msg.send(Action.CAP, msg.location);
+					}
+					else if (msg.action == Action.CAP_SUP) {
+						num_suppliers ++;
+						msg.send(Action.CAP, msg.location);
+					}
+					else if (msg.action == Action.CAP) {
+						msg.send(Action.CAP, msg.location);
+					}
+					else if (msg.action == Action.MINE) {
+						msg.send(Action.MINE, msg.location);
+					}
+					else if (msg.action == Action.DEFUSING) {
+						msg.send(Action.DEFUSING, msg.location);
 					}
 				}
 			}
