@@ -77,7 +77,7 @@ public class hqCode {
 			//sectors are:
 			MapLocation frontLines = whichSector(rc);
 
-			for (int i = 0; i < 101; i ++) {
+			/*for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
 				if (msg.action != null) {
 					if (msg.action == Action.CAP_GEN) {
@@ -96,7 +96,7 @@ public class hqCode {
 						msg.send(Action.CAPTURING, msg.location);
 					}
 				}
-			}
+			}*/
 			
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 				msg.send(Action.ATTACK, enemyHQ);
@@ -113,7 +113,7 @@ public class hqCode {
 				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 1); //make these numbers based on #allies later
 				else if (enemies.length > 4) rally_point.add(dir2enemyHQ, -1);
 				
-				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
+				/*Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
 				int soldiers = 0;
 				for (Robot f : friends)
 					if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
@@ -123,7 +123,7 @@ public class hqCode {
 				{
 					rally_point = frontLines; 
 					System.out.println("frontLines got: " + rally_point);
-				}
+				}*/
 				
 				msg.send(Action.RALLY_AT, rally_point);
 				rc.setIndicatorString(0, "rally at" + rally_point.x + ", " + rally_point.y);

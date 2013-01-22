@@ -72,7 +72,9 @@ public class Message {
 		if (msg_sum != q && (p+msg_sum) != q) action = null;	//checks to see if its bad. if so, return -1.
 		else {
 			msg = msg >> shift;
-			action = Action.values()[mmask & msg];
+			int index = mmask & msg;
+			if (index >= 31) action = null;			//this shit shouldnt need to happen
+			else action = Action.values()[index];	// just should be able to do action.vals()[mmask&msg]
 			int y = (ymask & msg) >> msg_size;
 			int x = (xmask & msg) >> (msg_size+loc_size);
 			location = new MapLocation(x, y);
