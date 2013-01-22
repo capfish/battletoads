@@ -6,6 +6,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
 
@@ -74,7 +75,7 @@ public class hqCode {
 			
 			//find out which sector the end of our mines is in
 			//sectors are:
-			//MapLocation frontLines = whichSector(rc);
+			MapLocation frontLines = whichSector(rc);
 
 			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
@@ -96,31 +97,41 @@ public class hqCode {
 					}
 				}
 			}
+			
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 				msg.send(Action.ATTACK, enemyHQ);
 				rc.setIndicatorString(0, "attack eHQ");
-				System.out.println("HQCODE: send attack message");
 			}
 			else if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80)
-					|| rc.senseNearbyGameObjects(Robot.class, dist_btw_HQs/4, opponent).length != 0) 
+					|| rc.senseNearbyGameObjects(Robot.class, 36, opponent).length != 0) //dist_btw_HQs/16, opponent).length != 0) 
 			{
 				msg.send(Action.DISTRESS, myHQ);
 				rc.setIndicatorString(0, "distress");
-				System.out.println("HQCODE: send distress message");
 			}
 			else {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
-				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 2); //make these numbers based on #allies later
-				else if (enemies.length > 7) rally_point.add(dir2enemyHQ, -2);
+				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 1); //make these numbers based on #allies later
+				else if (enemies.length > 4) rally_point.add(dir2enemyHQ, -1);
+				
+				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
+				int soldiers = 0;
+				for (Robot f : friends)
+					if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
+						soldiers++;
+				if (soldiers < 10) rally_point = myHQ.add(dir2enemyHQ, 4);
+				else 
+				{
+					rally_point = frontLines; 
+					System.out.println("frontLines got: " + rally_point);
+				}
+				
 				msg.send(Action.RALLY_AT, rally_point);
 				rc.setIndicatorString(0, "rally at" + rally_point.x + ", " + rally_point.y);
-				System.out.println("HQCODE: send rally message; rally at" + rally_point.x + ", " + rally_point.y);
 				
 				if (rc.senseEncampmentSquares(rally_point, 100, Team.NEUTRAL).length < 2) {
 					//tell soldiers about faraway encamps.
 				}
 			}
-			msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
 			msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
 			
 			rc.yield();
@@ -129,14 +140,12 @@ public class hqCode {
 	
 	public static MapLocation whichSector(RobotController rc)
 	{
-		int diagonal = dist_btw_HQs;
-		int delta = diagonal/5;
-		int deltaX = width/5;
-		int deltaY = height/5;
+		int dist = (int)Math.sqrt(dist_btw_HQs);
+		int delta = dist/5;
 		//check middle section
-		MapLocation sect3 = new MapLocation(width/2, height/2);
-		MapLocation sect2 = new MapLocation(sect3.x - deltaX, sect3.y - deltaY);
-		MapLocation sect1 = new MapLocation(sect2.x - deltaX, sect2.y - deltaY);
+		MapLocation sect3 = myHQ.add(dir2enemyHQ, dist/2);
+		MapLocation sect2 = sect3.add(sect3.directionTo(myHQ), delta);  //new MapLocation(sect3.x - deltaX, sect3.y - deltaY);
+		MapLocation sect1 = sect2.add(sect2.directionTo(myHQ), delta);  //new MapLocation(sect2.x - deltaX, sect2.y - deltaY);
 		
 		int sect3Count = rc.senseMineLocations(sect3, delta, myTeam).length;
 		int sect2Count = rc.senseMineLocations(sect2, delta, myTeam).length;
@@ -147,13 +156,13 @@ public class hqCode {
 				return sect1;
 		else
 		{
-			MapLocation sect4 = new MapLocation(sect3.x + deltaX, sect3.y + deltaY);
+			MapLocation sect4 = sect3.add(sect3.directionTo(enemyHQ), delta); //new MapLocation(sect3.x + deltaX, sect3.y + deltaY);
 			int sect4Count = rc.senseMineLocations(sect4, delta, myTeam).length;
 			if (sect4Count == 0)
 				return sect3;
 			else
 			{
-				MapLocation sect5 = new MapLocation(sect4.x + deltaX, sect4.y + deltaY);
+				MapLocation sect5 = sect4.add(sect4.directionTo(enemyHQ), delta); //new MapLocation(sect4.x + deltaX, sect4.y + deltaY);
 				int sect5Count = rc.senseMineLocations(sect5, delta, myTeam).length;
 				if (sect5Count == 0)
 					return sect4;

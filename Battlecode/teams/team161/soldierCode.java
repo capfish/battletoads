@@ -17,35 +17,87 @@ public class soldierCode {
 		target = enemyHQ;
 		while (true) {
 
+			//CONSTANTS
 			myLoc = rc.getLocation();
 			enemyHQ = rc.senseEnemyHQLocation();
 			myHQ = rc.senseHQLocation();
 			myTeam = rc.getTeam();
 			enemyTeam = rc.getTeam().opponent();
 			
+			//msg initialization
 			msg.reset();
 			rc.setIndicatorString(0, "");
 			rc.setIndicatorString(1, "");
-			msg.receive(-1);
-			if (msg.action == Action.RALLY_AT) {
-				target = msg.location;
-			}
-	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), RobotType.SOLDIER.sensorRadiusSquared, rc.getTeam().opponent());
-			if (enemy.length > 1) msg.send(Action.ENEMY, myLoc);
-	    	if (rc.isActive()) {
-				//Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 49, RobotPlayer.enemyTeam);
-				//if (enemy.length > 0) 				//If nearby enemies: ATTACK MODE
-				//	attackMode(rc, enemy);
-				//	flee(rc);
-				if (target.equals(enemyHQ)) travelMode(rc);
-				else if (!mineMode(rc))
-					if (!colonizeMode(rc))
-						travelMode(rc);
-			}
-			rc.yield();
+
+			//Data:
+	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, enemyTeam);
+	    	Robot[] friends = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, myTeam);
+
+	    	//Send enemy message
+	    	if (enemy.length > 1) msg.send(Action.ENEMY, myLoc);
+
+			//If active - do datas
+	    	if (rc.isActive())
+	    	{
+	    		//If HQ is sending out distress messages: check if we should go back to the HQ
+	    		int msgCount = -1;
+	    		boolean blankMsg = false;
+	    		boolean distress = false;
+	    		boolean attack = false;
+	    		
+	    		int generators = 0;
+	    		int suppliers = 0;
+
+	    		
+	    		while (true)
+	    		{
+	    			msg.receive(msgCount);
+	    			if (msg.action == null)
+	    			{
+	    				if (blankMsg == true) break;
+	    				blankMsg = true;
+	    			}
+	    			else if (msg.action == Action.DISTRESS)
+	    			{
+	    				distress = true;
+	    			}
+	    			else if (msg.action == Action.GEN_SUP)
+	    			{
+	    				generators = msg.location.x;
+	    				suppliers = msg.location.y;
+	    			}
+	    			else if (msg.action == Action.RALLY_AT)
+	    			{
+	    				target = msg.location;
+	    			}
+	    			else if (msg.action == Action.ATTACK)
+	    			{
+	    				target = enemyHQ;
+	    				attack = true;
+	    			}
+	    			msgCount--;
+	    		}
+	    		
+	    		if (distress == true)
+	    		{
+//	    			System.out.println("DISTRESSSSSSSSSSS");
+	    			attack = true;
+	    			if (myLoc.distanceSquaredTo(enemyHQ) < 25)
+	    				target = enemyHQ;
+	    			else
+	    				target = myHQ;
+	    		}
+	    		if (attack == true)
+	    			travelMode(rc);
+	    		else if (!mineMode(rc))
+	    			if (!colonizeMode(rc))
+	    				travelMode(rc);
+	    		rc.yield();
+	    	}
 		}
 	}
-//check if mines are present before making mines!!!!!
+
+	//check if mines are present before making mines!!!!!
 	/*--------------TRAVEL CODE--------------------*/
 	
 	private static void travelMode(RobotController rc) throws GameActionException
@@ -69,7 +121,7 @@ public class soldierCode {
 			rc.setIndicatorString(1, "target " + target + " moved in direction " + dir);
 
 		} else rc.setIndicatorString(1, "target " + target + " something is wrong");
-
+//////????????????????????????????????????????????????????
 
 	}
 	
@@ -113,6 +165,7 @@ public class soldierCode {
     	}
     	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 100, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
+    	if (encamps.length != 0) rc.setIndicatorString(1, "# neutral encampments > 0");
     	target = encamps[(int)Math.random()*encamps.length];
     	return false;
     }
@@ -143,7 +196,7 @@ public class soldierCode {
 		//else if (RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ)
 		//	  && RobotPlayer.enemyHQ.directionTo(myLoc) == RobotPlayer.enemyHQ.directionTo(RobotPlayer.myHQ))
 		//	rc.captureEncampment(RobotType.ARTILLERY);
-		else if (Math.random() < 0.5) rc.captureEncampment(RobotType.SUPPLIER);
+		else if (Math.random() < 0.7) rc.captureEncampment(RobotType.SUPPLIER);
 		else rc.captureEncampment(RobotType.GENERATOR);
 		return true;
     }

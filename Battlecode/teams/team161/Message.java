@@ -19,16 +19,16 @@ public class Message {
 	private static int MULT = 743; //prime
 	private static int q = 593; //anything
 	private static int p = 853; //prime
-	private static int shift = 13;
+	private static int shift = 12;
 	private static int loc_size = 7;
-	private static int msg_size = 4;
-	private static int NUM_CHANNELS = 65535;
+	private static int msg_size = 5;
+	private static int NUM_CHANNELS= 65535;
 	private RobotController rc;
 	private int s_channel, channel_origin;
 	private int ID;
-	private static int xmask = 0xFE00; //0b1111111000000000;
-	private static int ymask = 0x1FC; //0b0000000111111100;
-	private static int mmask = 0x3; //0b0000000000000011;
+	private static int xmask = 0x7F000; //0b1111111000000000000;
+	private static int ymask = 0xFE0;   //0b0000000111111100000;
+	private static int mmask = 0x1F;    //0b0000000000000011111;
 	public Action action;
 	public MapLocation location;
 	Message(RobotController rc) {
