@@ -8,7 +8,6 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
-import battlecode.engine.instrumenter.RobotMonitor;
 
 public class hqCode {
 	private static int width, height, area, num_suppliers, num_generators, dist_btw_HQs, roundsTillCaptured;
@@ -40,8 +39,16 @@ public class hqCode {
 		dir2enemyHQ = myHQ.directionTo(enemyHQ);
 		myTeam = rc.getTeam();
 		opponent = rc.getTeam().opponent();
-
+		MapLocation spawnSpot = null;
+		MapLocation[] adj_encamps = rc.senseEncampmentSquares(myHQ, 2, Team.NEUTRAL);
+		if (myHQ.x == 0 || myHQ.x == width) {
+			if (myHQ.y == 0 || myHQ.y == height) if (adj_encamps.length >= 3) spawnSpot = adj_encamps[0];
+			else if (adj_encamps.length >= 5) spawnSpot = adj_encamps[0];
+		} else if (adj_encamps.length >= 8) spawnSpot = adj_encamps[0];
+		
 		while (true) {
+			msg.reset();
+			if (spawnSpot != null) msg.send(Action.DONT_CAP, spawnSpot);
 			roundsTillCaptured --;
 			if (rc.isActive()) {
 				if (rc.getTeamPower() < 60) {
@@ -64,19 +71,11 @@ public class hqCode {
 					}
 				}
 			}
-				//MapLocation[] encamps = rc.senseEncampmentSquares(rc.getLocation(), (width*height)/4, Team.NEUTRAL);
-				/*for (MapLocation encamp: encamps) {
-					msg.send("1");
-					msg.sendLoc(encamp);
-				}*/
 			
 			//find out which sector the end of our mines is in
 			//sectors are:
-//			System.out.println(Clock.getBytecodesLeft());
-			MapLocation frontLines = whichSector(rc);
-//			System.out.println(Clock.getBytecodesLeft());
+			//MapLocation frontLines = whichSector(rc);
 
-			msg.reset();
 			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
 				if (msg.action != null) {
@@ -98,7 +97,7 @@ public class hqCode {
 				}
 			}
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
-				msg.send(Action.ATTACK, rc.senseEnemyHQLocation());
+				msg.send(Action.ATTACK, enemyHQ);
 				rc.setIndicatorString(0, "attack eHQ");
 			}
 			else if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80)
@@ -112,7 +111,7 @@ public class hqCode {
 					//tell soldiers about faraway encamps.
 				}
 			}
-			msg.send(Action.GEN_SUP, new MapLocation( num_suppliers, num_generators ));
+			msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
 			rc.yield();
 		}
 	}
