@@ -28,7 +28,7 @@ public class hqCode {
 					if (Math.random() < 0.6 && !rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 					else {
 						Direction dir = randomDir(rc, 15);
-                                                Team spawnMine = rc.senseMine(RobotPlayer.myHQ.add(dir));
+                        spawnMine = rc.senseMine(RobotPlayer.myHQ.add(dir));
 						if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
 						else if (spawnMine == RobotPlayer.enemyTeam || spawnMine == Team.NEUTRAL)
                                                     {

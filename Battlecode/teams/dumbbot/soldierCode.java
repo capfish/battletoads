@@ -87,11 +87,7 @@ public class soldierCode {
             if (prev != null) {
                 for (int i = 0; i <= 2; i++) {
                     Direction dir = Direction.values()[(prev.ordinal()+i)%8];
-                    Team t = rc.senseMine(myLoc.add(dir));
-                    if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
-                        rc.defuseMine(myLoc.add(dir));
-                        rc.yield();
-                    }
+                    smartDefuseMine(rc, dir);
                     if (rc.senseEncampmentSquare(myLoc.add(dir))) {
                         if (rc.canMove(dir)) {
                             rc.move(dir);
@@ -100,11 +96,7 @@ public class soldierCode {
                         }
                     }
                     dir = Direction.values()[(prev.ordinal()-i+8)%8];
-                    t = rc.senseMine(myLoc.add(dir));
-                    if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
-                        rc.defuseMine(myLoc.add(dir));
-                        rc.yield();
-                    }
+                    smartDefuseMine(rc, dir);
                     if (rc.senseEncampmentSquare(myLoc.add(dir))) {
                         if (rc.canMove(dir)) {
                             rc.move(dir);
@@ -246,8 +238,7 @@ public class soldierCode {
                                                       || myLoc.directionTo(RobotPlayer.enemyHQ) == myLoc.directionTo(RobotPlayer.myHQ).opposite().rotateLeft()
                                                       || myLoc.directionTo(RobotPlayer.enemyHQ) == myLoc.directionTo(RobotPlayer.myHQ).opposite().rotateRight()
                                                       || myLoc.directionTo(RobotPlayer.myHQ) == myLoc.directionTo(RobotPlayer.enemyHQ).opposite().rotateLeft()
-                                                      || myLoc.directionTo(RobotPlayer.myHQ) == myLoc.directionTo(RobotPlayer.enemyHQ).opposite().rotateRight())
-                             && !rc.senseEncampmentSquare(myLoc))
+                                                      || myLoc.directionTo(RobotPlayer.myHQ) == myLoc.directionTo(RobotPlayer.enemyHQ).opposite().rotateRight()))
                         {
                             rc.layMine();
                             return true;
@@ -294,6 +285,13 @@ public class soldierCode {
             if((a+b) % 4 == 0 && a == b) return true;
             return false;
         }
-    
+        private static void smartDefuseMine(RobotController rc, Direction dir) throws GameActionException{
+            Team t = rc.senseMine(myLoc.add(dir));
+            if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
+                rc.defuseMine(myLoc.add(dir));
+                rc.yield();
+            }
+        }
+        
 	/*--------------MINE CODE END--------------------*/
 }

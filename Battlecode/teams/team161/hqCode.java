@@ -11,6 +11,7 @@ import battlecode.engine.instrumenter.RobotMonitor;
 
 public class hqCode {
 	private static int width, height;
+	private static Team spawnMine;
     private static Direction randomDir(RobotController rc, int depth) {
     	if ( depth == 0 ) return null;
         Direction dir = Direction.values()[(int)(Math.random()*8)];
@@ -35,8 +36,15 @@ public class hqCode {
 					if (Math.random() < 0.6 && !rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 					else {
 						Direction dir = randomDir(rc, 15);
+						spawnMine = rc.senseMine(RobotPlayer.myHQ.add(dir));
 						if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
-						else rc.spawn(randomDir(rc, 15));
+						else if (spawnMine == RobotPlayer.enemyTeam || spawnMine == Team.NEUTRAL)
+                        {
+                            dir = randomDir(rc, 15);
+                            if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
+                            else rc.spawn(randomDir(rc, 15));
+                        }
+                    else rc.spawn(dir);
 					}
 				}
 			}
