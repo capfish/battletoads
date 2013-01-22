@@ -99,19 +99,30 @@ public class hqCode {
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 				msg.send(Action.ATTACK, enemyHQ);
 				rc.setIndicatorString(0, "attack eHQ");
+				System.out.println("HQCODE: send attack message");
 			}
 			else if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80)
-					|| rc.senseNearbyGameObjects(Robot.class, dist_btw_HQs/4, opponent).length != 0) msg.send(Action.DISTRESS, myHQ);
+					|| rc.senseNearbyGameObjects(Robot.class, dist_btw_HQs/4, opponent).length != 0) 
+			{
+				msg.send(Action.DISTRESS, myHQ);
+				rc.setIndicatorString(0, "distress");
+				System.out.println("HQCODE: send distress message");
+			}
 			else {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
 				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 2); //make these numbers based on #allies later
 				else if (enemies.length > 7) rally_point.add(dir2enemyHQ, -2);
 				msg.send(Action.RALLY_AT, rally_point);
+				rc.setIndicatorString(0, "rally at" + rally_point.x + ", " + rally_point.y);
+				System.out.println("HQCODE: send rally message; rally at" + rally_point.x + ", " + rally_point.y);
+				
 				if (rc.senseEncampmentSquares(rally_point, 100, Team.NEUTRAL).length < 2) {
 					//tell soldiers about faraway encamps.
 				}
 			}
 			msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
+			msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
+			
 			rc.yield();
 		}
 	}
