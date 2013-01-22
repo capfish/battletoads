@@ -107,7 +107,8 @@ public class hqCode {
 				msg.send(Action.RALLY_AT, rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
 				rc.setIndicatorString(0, "target = rally");
 			}
-			if ((area < 400 || encamps.length < area) && Clock.getRoundNum() < 80)
+			//if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80);
+					//|| rc.senseN) msg.send(Action.DISTRESS, myHQ);
 			
 			rc.yield();
 		}
@@ -116,9 +117,9 @@ public class hqCode {
 	public static MapLocation whichSector(RobotController rc)
 	{
 		int diagonal = myHQ.distanceSquaredTo(enemyHQ);
-		int delta = (int)(diagonal/5);
-		int deltaX = (int)(width/5);
-		int deltaY = (int)(height/5);
+		int delta = diagonal/5;
+		int deltaX = width/5;
+		int deltaY = height/5;
 		//check middle section
 		MapLocation sect3 = new MapLocation(width/2, height/2);
 		MapLocation sect2 = new MapLocation(sect3.x - deltaX, sect3.y - deltaY);
