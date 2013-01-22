@@ -22,6 +22,7 @@ public class hqCode {
 		width = rc.getMapWidth();
 		height = rc.getMapHeight();
 		Message msg = new Message(rc);
+		int num_suppliers, num_generators;
 
 		while (true) {
 			rc.setIndicatorString(0, "doing shit");
@@ -53,14 +54,14 @@ public class hqCode {
 
 			msg.reset();
 			
-			if (rc.getTeamPower() < 50 || Clock.getRoundNum() > 1000) {
+			if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 2000) {
 				msg.send("10");
 				msg.sendLoc(rc.senseEnemyHQLocation());	
 				rc.setIndicatorString(0, "target = eHQ");
 			}
 			else {//if (encamps.length < 5) {
 				msg.send("10");
-				msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/10));
+				msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
 				rc.setIndicatorString(0, "target = rally");
 			}
 			
