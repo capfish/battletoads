@@ -21,11 +21,11 @@ public class soldierCode {
 			rc.setIndicatorString(0, "");
 			rc.setIndicatorString(1, "");
 			msg.receive(-1);
-			if (msg.command == 2) {
+			if (msg.action == Action.RALLY_AT) {
 				target = new MapLocation(msg.xloc, msg.yloc);
 			}
 	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), RobotType.SOLDIER.sensorRadiusSquared, rc.getTeam().opponent());
-			if (enemy.length > 1) msg.send(1, myLoc);
+			if (enemy.length > 1) msg.send(Action.ENEMY, myLoc);
 	    	if (rc.isActive()) {
 				//Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 49, RobotPlayer.enemyTeam);
 				//if (enemy.length > 0) 				//If nearby enemies: ATTACK MODE

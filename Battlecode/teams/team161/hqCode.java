@@ -24,6 +24,7 @@ public class hqCode {
 		height = rc.getMapHeight();
 		Message msg = new Message(rc);
 		int num_suppliers, num_generators;
+		num_suppliers = num_generators = 0;
 
 		while (true) {
 			if (rc.isActive()) {
@@ -46,6 +47,14 @@ public class hqCode {
                     else rc.spawn(dir);
 					}
 				}
+				for (int i = 0; i < 101; i++) {
+					msg.receive(i);
+					if (msg.action != null) {
+						if (msg.action == Action.CAP_GEN) num_generators ++;
+					}
+					
+				}
+				
 			}
 				//MapLocation[] encamps = rc.senseEncampmentSquares(rc.getLocation(), (width*height)/4, Team.NEUTRAL);
 				/*for (MapLocation encamp: encamps) {
@@ -63,8 +72,8 @@ public class hqCode {
 			MapLocation enemyloc = null;
 			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
-				if (msg.command != -1) {
-					if (msg.command == 1) {
+				if (msg.action != null) {
+					if (msg.action == Action.ENEMY) {
 						enemyloc = new MapLocation(msg.xloc, msg.yloc);
 						rc.setIndicatorString(1, "see enemy cluster near " + enemyloc);
 						break;
@@ -72,11 +81,11 @@ public class hqCode {
 				}
 			}
 			if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 2000) {
-				msg.send(2, rc.senseEnemyHQLocation());
+				msg.send(Action.RALLY_AT, rc.senseEnemyHQLocation());
 				rc.setIndicatorString(0, "target = eHQ");
 			}
 			else {//if (encamps.length < 5) {
-				msg.send(2, rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
+				msg.send(Action.RALLY_AT, rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
 				rc.setIndicatorString(0, "target = rally");
 			}
 			

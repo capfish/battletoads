@@ -19,9 +19,9 @@ public class Message {
 	private static int MULT = 743; //prime
 	private static int q = 593; //anything
 	private static int p = 853; //prime
-	private static int shift = 14;
+	private static int shift = 13;
 	private static int loc_size = 7;
-	private static int msg_size = 3;
+	private static int msg_size = 4;
 	private static int NUM_CHANNELS = 65535;
 	private RobotController rc;
 	private int s_channel, channel_origin;
@@ -29,7 +29,7 @@ public class Message {
 	private static int xmask = 0xFE00; //0b1111111000000000;
 	private static int ymask = 0x1FC; //0b0000000111111100;
 	private static int mmask = 0x3; //0b0000000000000011;
-	public int command;
+	public Action action;
 	public int xloc;
 	public int yloc;
 	Message(RobotController rc) {
@@ -41,8 +41,8 @@ public class Message {
 	//String should be 16 digits and consist of 1s and 0s. 
 	//msb = isLocation? here, should be 0.
 	//if !isLocation, then second lsb bit = gotowards/getencampments/mines/whatever
-	public void send(int message, MapLocation loc) throws GameActionException {
-		int temp = ((((loc.x << loc_size) + loc.y) << msg_size) + message) << shift;
+	public void send(Action message, MapLocation loc) throws GameActionException {
+		int temp = ((((loc.x << loc_size) + loc.y) << msg_size) + message.ordinal()) << shift;
 		int msg = pad(temp);
 		int channel = (channel_origin - s_channel + ID) % NUM_CHANNELS;
 		rc.broadcast(channel, msg);
@@ -70,10 +70,10 @@ public class Message {
 		}
 		int msg = rc.readBroadcast(channel % NUM_CHANNELS) - round;
 		int msg_sum = msg % p;
-		if (msg_sum != q && (p+msg_sum) != q) command = -1;	//checks to see if its bad. if so, return -1.
+		if (msg_sum != q && (p+msg_sum) != q) action = null;	//checks to see if its bad. if so, return -1.
 		else {
 			msg = msg >> shift;
-			command = mmask & msg;
+			action = Action.values()[mmask & msg];
 			yloc = (ymask & msg) >> msg_size;
 			xloc = (xmask & msg) >> (msg_size+loc_size);
 		}
