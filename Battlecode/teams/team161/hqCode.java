@@ -4,17 +4,19 @@ import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
 import battlecode.engine.instrumenter.RobotMonitor;
 
 public class hqCode {
-	private static int width, height, area, num_suppliers, num_generators;
+	private static int width, height, area, num_suppliers, num_generators, dist_btw_HQs, roundsTillCaptured;
+	private static Direction dir2enemyHQ;
 	private static Team spawnMine;
 	private static MapLocation[] encamps;
 	private static Message msg;
-	private static MapLocation myHQ, enemyHQ;
+	private static MapLocation myHQ, enemyHQ, rally_point;
 	private static Team myTeam, opponent;
 
     private static Direction randomDir(RobotController rc, int depth) {
@@ -30,13 +32,17 @@ public class hqCode {
 		area = height*width;
 		encamps = rc.senseEncampmentSquares(rc.getLocation(), 5000, Team.NEUTRAL);
 		msg = new Message(rc);
-		num_suppliers = num_generators = 0;
+		num_suppliers = num_generators = roundsTillCaptured = 0;
 		myHQ = rc.senseHQLocation();
 		enemyHQ = rc.senseEnemyHQLocation();
+		rally_point = myHQ;
+		dist_btw_HQs = myHQ.distanceSquaredTo(enemyHQ);
+		dir2enemyHQ = myHQ.directionTo(enemyHQ);
 		myTeam = rc.getTeam();
 		opponent = rc.getTeam().opponent();
 
 		while (true) {
+			roundsTillCaptured --;
 			if (rc.isActive()) {
 				if (rc.getTeamPower() < 50) {
 					if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
@@ -71,16 +77,10 @@ public class hqCode {
 //			System.out.println(Clock.getBytecodesLeft());
 
 			msg.reset();
-			MapLocation enemyloc = null;
 			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
 				if (msg.action != null) {
-					if (msg.action == Action.ENEMY) {
-						enemyloc = msg.location;
-						rc.setIndicatorString(1, "see enemy cluster near " + enemyloc);
-						break;
-					}
-					else if (msg.action == Action.CAP_GEN) {
+					if (msg.action == Action.CAP_GEN) {
 						num_generators ++;
 						msg.send(Action.CAP, msg.location);
 					}
@@ -97,26 +97,29 @@ public class hqCode {
 					else if (msg.action == Action.DEFUSING) {
 						msg.send(Action.DEFUSING, msg.location);
 					}
+					else if (msg.action == Action.CAPTURING) {
+						roundsTillCaptured = 25;
+					}
 				}
 			}
-			if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 2000) {
-				msg.send(Action.RALLY_AT, rc.senseEnemyHQLocation());
-				rc.setIndicatorString(0, "target = eHQ");
+			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
+				msg.send(Action.ATTACK, rc.senseEnemyHQLocation());
+				rc.setIndicatorString(0, "attack eHQ");
 			}
-			else {//if (encamps.length < 5) {
-				msg.send(Action.RALLY_AT, rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
-				rc.setIndicatorString(0, "target = rally");
+			else if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80)
+					|| rc.senseNearbyGameObjects(Robot.class, dist_btw_HQs/4, opponent).length != 0) msg.send(Action.DISTRESS, myHQ);
+			else {
+				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
+				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 2); //make these numbers based on #allies later
+				else if (enemies.length > 7) rally_point.add(dir2enemyHQ, -2);
 			}
-			//if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80);
-					//|| rc.senseN) msg.send(Action.DISTRESS, myHQ);
-			
 			rc.yield();
 		}
 	}
 	
 	public static MapLocation whichSector(RobotController rc)
 	{
-		int diagonal = myHQ.distanceSquaredTo(enemyHQ);
+		int diagonal = dist_btw_HQs;
 		int delta = diagonal/5;
 		int deltaX = width/5;
 		int deltaY = height/5;
