@@ -20,15 +20,13 @@ public class soldierCode {
 			msg.reset();
 			rc.setIndicatorString(0, "");
 			rc.setIndicatorString(1, "");
-			String command = msg.receive();
-			if (command.equals("10")) {
-				String t = msg.receive();
-				int i = t.indexOf(':');
-				int x = Integer.parseInt(t.substring(0, i));
-				int y = Integer.parseInt(t.substring(i+1));
-				target = new MapLocation(x,y);
+			msg.receive(-1);
+			if (msg.command == 2) {
+				target = new MapLocation(msg.xloc, msg.yloc);
 			}
-			if (rc.isActive()) {
+	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), RobotType.SOLDIER.sensorRadiusSquared, rc.getTeam().opponent());
+			if (enemy.length > 1) msg.send(1, myLoc);
+	    	if (rc.isActive()) {
 				//Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 49, RobotPlayer.enemyTeam);
 				//if (enemy.length > 0) 				//If nearby enemies: ATTACK MODE
 				//	attackMode(rc, enemy);
@@ -121,7 +119,7 @@ public class soldierCode {
     	return false;
     }
     private static boolean capture(RobotController rc) throws GameActionException{
-    	if (rc.senseCaptureCost() > rc.getTeamPower() + 60) {
+    	if (rc.senseCaptureCost() > 2 * rc.getTeamPower()) {
     		rc.setIndicatorString(1, "not enough power");
     		return false;
     	}

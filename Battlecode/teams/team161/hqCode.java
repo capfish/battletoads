@@ -26,7 +26,6 @@ public class hqCode {
 		int num_suppliers, num_generators;
 
 		while (true) {
-			rc.setIndicatorString(0, "doing shit");
 			if (rc.isActive()) {
 				if (rc.getTeamPower() < 50) {
 					if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
@@ -61,15 +60,23 @@ public class hqCode {
 //			System.out.println(Clock.getBytecodesLeft());
 
 			msg.reset();
-			
+			MapLocation enemyloc = null;
+			for (int i = 0; i < 101; i ++) {
+				msg.receive(i);
+				if (msg.command != -1) {
+					if (msg.command == 1) {
+						enemyloc = new MapLocation(msg.xloc, msg.yloc);
+						rc.setIndicatorString(1, "see enemy cluster near " + enemyloc);
+						break;
+					}
+				}
+			}
 			if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 2000) {
-				msg.send("10");
-				msg.sendLoc(rc.senseEnemyHQLocation());	
+				msg.send(2, rc.senseEnemyHQLocation());
 				rc.setIndicatorString(0, "target = eHQ");
 			}
 			else {//if (encamps.length < 5) {
-				msg.send("10");
-				msg.sendLoc(rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
+				msg.send(2, rc.getLocation().add(rc.getLocation().directionTo(rc.senseEnemyHQLocation()), (width+height)/7));
 				rc.setIndicatorString(0, "target = rally");
 			}
 			

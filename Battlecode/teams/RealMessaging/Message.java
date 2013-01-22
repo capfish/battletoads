@@ -19,9 +19,9 @@ public class Message {
 	private static int MULT = 743; //prime
 	private static int q = 593; //anything
 	private static int p = 853; //prime
-	private static int shift = 15;
+	private static int shift = 14;
 	private static int loc_size = 7;
-	private static int msg_size = 2;
+	private static int msg_size = 3;
 	private static int NUM_CHANNELS = 65535;
 	private RobotController rc;
 	private int s_channel, channel_origin;
