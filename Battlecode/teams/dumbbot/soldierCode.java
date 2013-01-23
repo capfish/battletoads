@@ -8,11 +8,15 @@ public class soldierCode {
     private static Direction prev;
     private static Message msg;
     private static int population;
+    private static int height;
+    private static int width;
     
 
 
     public static void soldierRun(RobotController rc) throws GameActionException {
         msg = new Message(rc);
+        height = rc.getMapHeight();
+        width = rc.getMapWidth();
         while (true) {
             myLoc = rc.getLocation();
             population = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, 10000, RobotPlayer.myTeam).length;
@@ -82,7 +86,7 @@ public class soldierCode {
 
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
         rc.setIndicatorString(0, "colonize mode");
-        if (population < 7) return false;
+        if (population < 650/(height+width)) return false;
     	if (rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
             if (prev != null) {
                 for (int i = 0; i <= 2; i++) {
@@ -108,7 +112,7 @@ public class soldierCode {
             }
             return capture(rc);
     	}
-    	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 81, Team.NEUTRAL);
+    	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 128, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
     	/*int minDist = 10000;
           MapLocation minEncamp = encamps[0];
@@ -152,7 +156,6 @@ public class soldierCode {
         else rc.captureEncampment(RobotType.GENERATOR);
         return true;
     }
-    
     
 	/*--------------COLONIZE CODE END--------------------*/
     
@@ -223,9 +226,10 @@ public class soldierCode {
 	/*--------------MINE CODE--------------------*/
     
         private static boolean mineMode(RobotController rc) throws GameActionException {
+            Robot[] enemies = rc.senseNearbyGameObjects(rc.getRobot().getClass(), rc.getLocation(), 2*RobotType.SOLDIER.sensorRadiusSquared, rc.getTeam().opponent());
+            if (enemies.length != 0) return false;
             rc.setIndicatorString(0, "mine mode");
-
-            if (rc.senseMine(myLoc) != null || population < 7)
+            if (rc.senseMine(myLoc) != null || population < 700/(height+width))
     		return false;
             if (rc.hasUpgrade(Upgrade.PICKAXE))
                 {

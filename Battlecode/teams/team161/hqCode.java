@@ -54,7 +54,7 @@ public class hqCode {
 			if (rc.isActive()) {
 				if (rc.getTeamPower() < 60) {
 					if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
-					//else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
+					else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
 					else rc.researchUpgrade(Upgrade.NUKE);
 				} else {
 					if (Math.random() < 0.6 && !rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
@@ -113,7 +113,7 @@ public class hqCode {
 				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 1); //make these numbers based on #allies later
 				else if (enemies.length > 4) rally_point.add(dir2enemyHQ, -1);
 				
-				/*Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
+				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
 				int soldiers = 0;
 				for (Robot f : friends)
 					if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
@@ -123,7 +123,7 @@ public class hqCode {
 				{
 					rally_point = frontLines; 
 					System.out.println("frontLines got: " + rally_point);
-				}*/
+				}
 				
 				msg.send(Action.RALLY_AT, rally_point);
 				rc.setIndicatorString(0, "rally at" + rally_point.x + ", " + rally_point.y);

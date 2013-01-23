@@ -47,7 +47,7 @@ public class hqCode {
 				}*/
 				msg.reset();
 
-				if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 1000) {
+				if (/*rc.getTeamPower() < 50 ||*/ Clock.getRoundNum() > 10*(width+height)) {
 					msg.send("10");
 					msg.sendLoc(rc.senseEnemyHQLocation());	
 					rc.setIndicatorString(0, "target = eHQ");

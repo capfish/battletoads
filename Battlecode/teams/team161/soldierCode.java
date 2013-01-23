@@ -11,6 +11,8 @@ public class soldierCode {
 	private static MapLocation myHQ;
 	private static Team myTeam;
 	private static Team enemyTeam;
+	private static int generators = 0;
+    private static int suppliers = 0;
 
 	public static void soldierRun(RobotController rc) throws GameActionException {
 		msg = new Message(rc);
@@ -34,7 +36,7 @@ public class soldierCode {
 	    	Robot[] friends = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, myTeam);
 
 	    	//Send enemy message
-	    	if (enemy.length > 1) msg.send(Action.ENEMY, myLoc);
+	    	//if (enemy.length > 1) msg.send(Action.ENEMY, myLoc);
 
 			//If active - do datas
 	    	if (rc.isActive())
@@ -45,10 +47,7 @@ public class soldierCode {
 	    		boolean distress = false;
 	    		boolean attack = false;
 	    		
-	    		int generators = 0;
-	    		int suppliers = 0;
-
-	    		
+	    		   		
 	    		while (true)
 	    		{
 	    			msg.receive(msgCount);
@@ -178,27 +177,29 @@ public class soldierCode {
     }
     private static boolean capture(RobotController rc) throws GameActionException{
     	if (rc.senseCaptureCost() > 2 * rc.getTeamPower()) {
-    		rc.setIndicatorString(1, "not enough power");
-    		return false;
+            rc.setIndicatorString(1, "not enough power");
+            return false;
     	}
     	//broadcast that its colonizing shit so people don't try to go to it.
     	myLoc = rc.getLocation();
-    	if (rc.getTeamPower() < 3 *rc.senseCaptureCost()) rc.captureEncampment(RobotType.GENERATOR);
+    	RobotType capturedEncamp;
+    	if (rc.getTeamPower() < 2 *rc.senseCaptureCost()) { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
     	//else if (surrounded(rc, myLoc)) rc.captureEncampment(RobotType.MEDBAY);
     	//else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64) rc.captureEncampment(RobotType.ARTILLERY);
-    	else if (myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()
-                || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateLeft()
-                || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateRight()
-                || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateLeft()
-                || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateRight())
-       rc.captureEncampment(RobotType.ARTILLERY);
-		else if (myLoc.distanceSquaredTo(enemyHQ) < 64) rc.captureEncampment(RobotType.ARTILLERY);
-		//else if (RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ)
-		//	  && RobotPlayer.enemyHQ.directionTo(myLoc) == RobotPlayer.enemyHQ.directionTo(RobotPlayer.myHQ))
-		//	rc.captureEncampment(RobotType.ARTILLERY);
-		else if (Math.random() < 0.7) rc.captureEncampment(RobotType.SUPPLIER);
-		else rc.captureEncampment(RobotType.GENERATOR);
-		return true;
+    	else if ((myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()
+                  || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateLeft()
+                  || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateRight()
+                  || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateLeft()
+                  || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateRight())
+                 && !surrounded(rc, myLoc))
+    	    { rc.captureEncampment(RobotType.ARTILLERY); msg.send(Action.CAP_ART, myLoc); }
+        else if (myLoc.distanceSquaredTo(enemyHQ) < 64) { rc.captureEncampment(RobotType.ARTILLERY); msg.send(Action.CAP_ART, myLoc); }
+        //else if (RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ)
+        //	  && RobotPlayer.enemyHQ.directionTo(myLoc) == RobotPlayer.enemyHQ.directionTo(RobotPlayer.myHQ))
+        //	rc.captureEncampment(RobotType.ARTILLERY);
+        else if (generators >= suppliers) { rc.captureEncampment(RobotType.SUPPLIER); msg.send(Action.CAP_SUP, myLoc); }
+        else { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
+        return true;
     }
     
 	/*--------------COLONIZE CODE END--------------------*/
