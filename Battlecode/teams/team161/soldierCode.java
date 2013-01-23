@@ -17,7 +17,6 @@ public class soldierCode {
 
 	public static void soldierRun(RobotController rc) throws GameActionException {
 		msg = new Message(rc);
-		target = enemyHQ;
 		while (true) {
 
 			//CONSTANTS
@@ -26,7 +25,8 @@ public class soldierCode {
 			myHQ = rc.senseHQLocation();
 			myTeam = rc.getTeam();
 			enemyTeam = rc.getTeam().opponent();
-			
+			target = enemyHQ;
+
 			//msg initialization
 			msg.reset();
 			rc.setIndicatorString(0, "");
@@ -183,7 +183,7 @@ public class soldierCode {
     	return false;
     }
     private static boolean capture(RobotController rc) throws GameActionException{
-    	if (rc.senseCaptureCost() > 2 * rc.getTeamPower()) {
+    	if (rc.senseCaptureCost() * 2 > rc.getTeamPower()) {
             //rc.setIndicatorString(1, "not enough power");
             return false;
     	}
@@ -310,7 +310,7 @@ public class soldierCode {
                                           || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateRight())
                  && !rc.senseEncampmentSquare(myLoc))
     	{
-    		rc.yield();
+    		rc.layMine();
     		return true;
     	}
     	return false;
@@ -343,6 +343,17 @@ public class soldierCode {
         Team t = rc.senseMine(myLoc.add(dir));
         if (t == Team.NEUTRAL || t == enemyTeam) {
             rc.defuseMine(myLoc.add(dir));
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
+            rc.yield();
             rc.yield();
         }
     }

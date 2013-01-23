@@ -108,11 +108,13 @@ public class hqCode {
 			}
 			
 			Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
-			int soldiers = 0;
+			int soldiers = friends.length - rc.senseAlliedEncampmentSquares().length;
+/*
 			for (Robot f : friends)
 				if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
 					soldiers++;
-			
+			Robot[] fEncamps = rc.senseAlliedEncampmentSquares()
+*/			
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 				if (soldiers < 15) {
 //					rally_point = myHQ.add(dir2enemyHQ, 3);
