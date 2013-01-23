@@ -42,9 +42,9 @@ public class hqCode {
 		num_suppliers = num_generators = roundsTillCaptured = 0;
 		myHQ = rc.senseHQLocation();
 		enemyHQ = rc.senseEnemyHQLocation();
-		rally_point = myHQ;
 		dist_btw_HQs = myHQ.distanceSquaredTo(enemyHQ);
 		dir2enemyHQ = myHQ.directionTo(enemyHQ);
+		rally_point = myHQ.add(dir2enemyHQ, 3);
 		myTeam = rc.getTeam();
 		opponent = rc.getTeam().opponent();
 		MapLocation spawnSpot = null;
@@ -112,7 +112,7 @@ public class hqCode {
 			
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 				if (soldiers < 15) {
-					rally_point = myHQ.add(dir2enemyHQ, 9);
+//					rally_point = myHQ.add(dir2enemyHQ, 3);
 					msg.send(Action.RALLY_AT, rally_point);
 				}
 				else {
@@ -127,20 +127,18 @@ public class hqCode {
 			}
 			//else if ((dist_btw_HQs < 900 || encamps.length < area/10) && Clock.getRoundNum() < 300)
 			else {
-				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
-				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 1); //make these numbers based on #allies later
-				else if (enemies.length > 4) rally_point.add(dir2enemyHQ, -1);
-				
-				if (soldiers < 10) rally_point = myHQ.add(dir2enemyHQ, 9);
-				else 
+				if (soldiers < 10) msg.send(Action.RALLY_AT,  rally_point); //rally_point = myHQ.add(dir2enemyHQ, 9);
+				else
 				{
 					MapLocation frontLines = whichSector(rc);
-					rally_point = frontLines; 
-					System.out.println("frontLines got: " + rally_point);
-				}
+
+					Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
+					if (enemies.length < 3) frontLines = frontLines.add(dir2enemyHQ, 1); //make these numbers based on #allies later
+					else if (enemies.length > 4) frontLines = frontLines.add(dir2enemyHQ, -1);
 				
-				msg.send(Action.RALLY_AT, rally_point);
-				rc.setIndicatorString(0, "rally at" + rally_point.x + ", " + rally_point.y);
+					msg.send(Action.RALLY_AT, frontLines);
+					rc.setIndicatorString(0, "rally at" + frontLines.x + ", " + frontLines.y);
+				}
 				
 				if (rc.senseEncampmentSquares(rally_point, 100, Team.NEUTRAL).length < 2) {
 					//tell soldiers about faraway encamps.
@@ -151,37 +149,28 @@ public class hqCode {
 			rc.yield();
 		}
 	}
-	
+
 	public static MapLocation whichSector(RobotController rc)
 	{
-		int dist = (int)Math.sqrt(dist_btw_HQs);
-		int delta = dist/5;
-		//check middle section
-		MapLocation sect3 = myHQ.add(dir2enemyHQ, dist/2);
-		MapLocation sect2 = sect3.add(sect3.directionTo(myHQ), delta);  //new MapLocation(sect3.x - deltaX, sect3.y - deltaY);
-		MapLocation sect1 = sect2.add(sect2.directionTo(myHQ), delta);  //new MapLocation(sect2.x - deltaX, sect2.y - deltaY);
-		
-		int sect3Count = rc.senseMineLocations(sect3, delta, myTeam).length;
-		int sect2Count = rc.senseMineLocations(sect2, delta, myTeam).length;
-		if (sect3Count == 0)
-			if (sect2Count > 0)
-				return sect2;
-			else
-				return sect1;
-		else
-		{
-			MapLocation sect4 = sect3.add(sect3.directionTo(enemyHQ), delta); //new MapLocation(sect3.x + deltaX, sect3.y + deltaY);
-			int sect4Count = rc.senseMineLocations(sect4, delta, myTeam).length;
-			if (sect4Count == 0)
-				return sect3;
-			else
-			{
-				MapLocation sect5 = sect4.add(sect4.directionTo(enemyHQ), delta); //new MapLocation(sect4.x + deltaX, sect4.y + deltaY);
-				int sect5Count = rc.senseMineLocations(sect5, delta, myTeam).length;
-				if (sect5Count == 0)
-					return sect4;
-				return sect5;
-			}
-		}
+		return whichSectorHelper(rc, myHQ, enemyHQ);
 	}
+	
+	public static MapLocation whichSectorHelper(RobotController rc, MapLocation start, MapLocation end)
+	{
+		int dist = (int)Math.sqrt(start.distanceSquaredTo(end));
+		int delta = 5;
+		Direction dir = start.directionTo(end);
+
+		if (dist < 5)
+			return start;
+		
+		MapLocation center = start.add(dir, dist/2);
+		int centerCount = rc.senseMineLocations(center, delta, myTeam).length;
+		if (centerCount > 10)
+			return whichSectorHelper(rc, center, end);
+		if (centerCount < 5)
+			return whichSectorHelper(rc, start, center);
+		return center;
+	}
+
 }
