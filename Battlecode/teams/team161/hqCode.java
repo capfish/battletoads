@@ -82,10 +82,6 @@ public class hqCode {
 					}
 				}
 			}
-			
-			//find out which sector the end of our mines is in
-			//sectors are:
-			MapLocation frontLines = whichSector(rc);
 
 			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
@@ -108,9 +104,21 @@ public class hqCode {
 				}
 			}
 			
+			Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
+			int soldiers = 0;
+			for (Robot f : friends)
+				if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
+					soldiers++;
+			
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
-				msg.send(Action.ATTACK, enemyHQ);
-				rc.setIndicatorString(0, "attack eHQ");
+				if (soldiers < 15) {
+					rally_point = myHQ.add(dir2enemyHQ, 9);
+					msg.send(Action.RALLY_AT, rally_point);
+				}
+				else {
+					msg.send(Action.ATTACK, enemyHQ);
+					rc.setIndicatorString(0, "attack eHQ");
+				}
 			}
 			else if (rc.senseNearbyGameObjects(Robot.class, 36, opponent).length != 0) //dist_btw_HQs/16, opponent).length != 0) 
 			{
@@ -123,14 +131,10 @@ public class hqCode {
 				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 1); //make these numbers based on #allies later
 				else if (enemies.length > 4) rally_point.add(dir2enemyHQ, -1);
 				
-				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
-				int soldiers = 0;
-				for (Robot f : friends)
-					if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
-						soldiers++;
-				if (soldiers < 10) rally_point = myHQ.add(dir2enemyHQ, 4);
+				if (soldiers < 10) rally_point = myHQ.add(dir2enemyHQ, 9);
 				else 
 				{
+					MapLocation frontLines = whichSector(rc);
 					rally_point = frontLines; 
 					System.out.println("frontLines got: " + rally_point);
 				}
