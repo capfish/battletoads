@@ -197,7 +197,7 @@ public class soldierCode {
         //else if (RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ)
         //	  && RobotPlayer.enemyHQ.directionTo(myLoc) == RobotPlayer.enemyHQ.directionTo(RobotPlayer.myHQ))
         //	rc.captureEncampment(RobotType.ARTILLERY);
-        else if (generators >= suppliers) { rc.captureEncampment(RobotType.SUPPLIER); msg.send(Action.CAP_SUP, myLoc); }
+        else if (generators >= 3 * suppliers) { rc.captureEncampment(RobotType.SUPPLIER); msg.send(Action.CAP_SUP, myLoc); }
         else { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
         return true;
     }

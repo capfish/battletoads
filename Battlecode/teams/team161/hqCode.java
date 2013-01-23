@@ -27,6 +27,13 @@ public class hqCode {
     }
 
 	public static void hqRun(RobotController rc) throws GameActionException {
+		
+		/*if (rc.getTeamMemory()[0] > 1)
+			while (true) {
+				rc.researchUpgrade(Upgrade.NUKE);
+				rc.yield();
+			}
+		*/
 		width = rc.getMapWidth();
 		height = rc.getMapHeight();
 		area = height*width;
@@ -57,7 +64,10 @@ public class hqCode {
 					else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
 					else rc.researchUpgrade(Upgrade.NUKE);
 				} else {
-					if (Math.random() < 0.6 && !rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
+					if (Math.random() < 0.6) {
+						if(!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
+						else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
+					}
 					else {
 						Direction dir = randomDir(rc, 15);
 						spawnMine = rc.senseMine(myHQ.add(dir));
@@ -77,7 +87,7 @@ public class hqCode {
 			//sectors are:
 			MapLocation frontLines = whichSector(rc);
 
-			/*for (int i = 0; i < 101; i ++) {
+			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
 				if (msg.action != null) {
 					if (msg.action == Action.CAP_GEN) {
@@ -96,18 +106,18 @@ public class hqCode {
 						msg.send(Action.CAPTURING, msg.location);
 					}
 				}
-			}*/
+			}
 			
 			if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 				msg.send(Action.ATTACK, enemyHQ);
 				rc.setIndicatorString(0, "attack eHQ");
 			}
-			else if (((area < 400 || encamps.length < area/10) && Clock.getRoundNum() < 80)
-					|| rc.senseNearbyGameObjects(Robot.class, 36, opponent).length != 0) //dist_btw_HQs/16, opponent).length != 0) 
+			else if (rc.senseNearbyGameObjects(Robot.class, 36, opponent).length != 0) //dist_btw_HQs/16, opponent).length != 0) 
 			{
 				msg.send(Action.DISTRESS, myHQ);
 				rc.setIndicatorString(0, "distress");
 			}
+			//else if ((dist_btw_HQs < 900 || encamps.length < area/10) && Clock.getRoundNum() < 300)
 			else {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 100000, opponent);
 				if (enemies.length < 3) rally_point = rally_point.add(dir2enemyHQ, 1); //make these numbers based on #allies later
