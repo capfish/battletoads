@@ -18,6 +18,19 @@ public class hqCode {
 	private static Message msg;
 	private static MapLocation myHQ, enemyHQ, rally_point;
 	private static Team myTeam, opponent;
+	
+	private static void spawnSoldier(RobotController rc) throws GameActionException {
+		Direction dir = randomDir(rc, 15);
+		if (dir != null) spawnMine = rc.senseMine(myHQ.add(dir));
+		if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
+		else if (spawnMine == opponent || spawnMine == Team.NEUTRAL)
+        {
+            dir = randomDir(rc, 15);
+            if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
+            else rc.spawn(randomDir(rc, 15));
+        }
+		else rc.spawn(dir);
+	}
 
     private static Direction randomDir(RobotController rc, int depth) {
     	if ( depth == 0 ) return null;
@@ -48,11 +61,11 @@ public class hqCode {
 		myTeam = rc.getTeam();
 		opponent = rc.getTeam().opponent();
 		MapLocation spawnSpot = null;
-		MapLocation[] adj_encamps = rc.senseEncampmentSquares(myHQ, 2, Team.NEUTRAL);
+		int adj_encamps = rc.senseEncampmentSquares(myHQ, 2, Team.NEUTRAL).length + rc.senseEncampmentSquares(myHQ, 2, myTeam).length;
 		if (myHQ.x == 0 || myHQ.x == width) {
-			if (myHQ.y == 0 || myHQ.y == height) if (adj_encamps.length >= 3) spawnSpot = adj_encamps[0];
-			else if (adj_encamps.length >= 5) spawnSpot = adj_encamps[0];
-		} else if (adj_encamps.length >= 8) spawnSpot = adj_encamps[0];
+			if (myHQ.y == 0 || myHQ.y == height) if (adj_encamps >= 3) spawnSpot = myHQ.add(dir2enemyHQ);
+			else if (adj_encamps >= 5) spawnSpot = myHQ.add(dir2enemyHQ);
+		} else if (adj_encamps >= 8) spawnSpot = myHQ.add(dir2enemyHQ);
 		
 		while (true) {
 			msg.reset();
@@ -67,19 +80,9 @@ public class hqCode {
 					if (Math.random() < 0.6) {
 						if(!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 						else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
+						else spawnSoldier(rc);
 					}
-					else {
-						Direction dir = randomDir(rc, 15);
-						spawnMine = rc.senseMine(myHQ.add(dir));
-						if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
-						else if (spawnMine == opponent || spawnMine == Team.NEUTRAL)
-                        {
-                            dir = randomDir(rc, 15);
-                            if ( dir == null ) rc.researchUpgrade(Upgrade.NUKE);
-                            else rc.spawn(randomDir(rc, 15));
-                        }
-                    else rc.spawn(dir);
-					}
+					else spawnSoldier(rc);
 				}
 			}
 
@@ -138,7 +141,7 @@ public class hqCode {
 					else if (enemies.length > 4) frontLines = frontLines.add(dir2enemyHQ, -1);
 				
 					msg.send(Action.RALLY_AT, frontLines);
-					rc.setIndicatorString(0, "rally at" + frontLines.x + ", " + frontLines.y);
+					//rc.setIndicatorString(0, "rally at" + frontLines.x + ", " + frontLines.y);
 				}
 				
 				if (rc.senseEncampmentSquares(rally_point, 100, Team.NEUTRAL).length < 2) {

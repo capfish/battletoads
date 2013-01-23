@@ -13,6 +13,7 @@ public class soldierCode {
 	private static Team enemyTeam;
 	private static int generators = 0;
     private static int suppliers = 0;
+    private static MapLocation spawnSpot = null;
 
 	public static void soldierRun(RobotController rc) throws GameActionException {
 		msg = new Message(rc);
@@ -74,6 +75,11 @@ public class soldierCode {
 	    				target = enemyHQ;
 	    				attack = true;
 	    			}
+	    			else if (msg.action == Action.DONT_CAP)
+	    			{
+	    				spawnSpot = msg.location;
+	    				rc.setIndicatorString(0, "DUDE I HEARD YA");
+	    			}
 	    			msgCount--;
 	    		}
 	    		
@@ -104,20 +110,20 @@ public class soldierCode {
 		//ALTERNATE: get a command from the HQ.
 		
 		//go to enemy base
-		rc.setIndicatorString(0, "travel mode");
+		//rc.setIndicatorString(0, "travel mode");
 		if (myLoc.equals(target)) return;
 		Direction dir = myLoc.directionTo(target);
 		if (!rc.canMove(dir)) dir = randomDir(rc, 10);
 		Team t = rc.senseMine(myLoc.add(dir));
 		if (t == Team.NEUTRAL || t == enemyTeam) {
 			rc.defuseMine(myLoc.add(dir));
-			rc.setIndicatorString(1, "target " + target + " defusing in direction " + dir);
+			//rc.setIndicatorString(1, "target " + target + " defusing in direction " + dir);
 
 		}
 		else if (dir != Direction.NONE) {
 			rc.move(dir);
 			prev = dir;
-			rc.setIndicatorString(1, "target " + target + " moved in direction " + dir);
+			//rc.setIndicatorString(1, "target " + target + " moved in direction " + dir);
 
 		} else rc.setIndicatorString(1, "target " + target + " something is wrong");
 
@@ -136,8 +142,8 @@ public class soldierCode {
 	/*--------------COLONIZE CODE--------------------*/
 
     private static boolean colonizeMode(RobotController rc) throws GameActionException {
-		rc.setIndicatorString(0, "colonize mode");
-    	if (rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
+		//rc.setIndicatorString(1, "colonize mode");
+    	if (!myLoc.equals(spawnSpot) && rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
     		if (prev != null) {
     			for (int i = 0; i <= 1; i++) {
     				Direction dir = Direction.values()[(prev.ordinal()+i)%8];
@@ -158,13 +164,15 @@ public class soldierCode {
     				}
     			}
     		}
+    		if (rc.getLocation().equals(spawnSpot)) return false;
         	capture(rc);
         	return true;
     	}
     	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 100, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
     	if (encamps.length != 0) rc.setIndicatorString(1, "# neutral encampments > 0");
-    	target = encamps[(int)Math.random()*encamps.length];
+    	MapLocation encampTarget = encamps[(int)Math.random()*encamps.length];
+    	if (!encampTarget.equals(spawnSpot)) target = encampTarget;
     	return false;
     }
     private static boolean surrounded(RobotController rc, MapLocation loc) {
@@ -176,7 +184,7 @@ public class soldierCode {
     }
     private static boolean capture(RobotController rc) throws GameActionException{
     	if (rc.senseCaptureCost() > 2 * rc.getTeamPower()) {
-            rc.setIndicatorString(1, "not enough power");
+            //rc.setIndicatorString(1, "not enough power");
             return false;
     	}
     	//broadcast that its colonizing shit so people don't try to go to it.
@@ -207,7 +215,7 @@ public class soldierCode {
 	/*--------------ATTACK CODE--------------------*/
     
     private static void attackMode(RobotController rc, Robot[] enemies) throws GameActionException {
-		rc.setIndicatorString(0, "attack mode");
+		//rc.setIndicatorString(0, "attack mode");
     	if (!chase(rc)) if (rc.canMove(prev)) rc.move(prev);
     	
     }
@@ -270,7 +278,7 @@ public class soldierCode {
 	/*--------------MINE CODE--------------------*/
     
     private static boolean mineMode(RobotController rc) throws GameActionException {
-		rc.setIndicatorString(0, "mine mode");
+		//rc.setIndicatorString(0, "mine mode");
 
     	if (rc.senseMine(myLoc) != null) return false;
     	if (rc.hasUpgrade(Upgrade.PICKAXE))
