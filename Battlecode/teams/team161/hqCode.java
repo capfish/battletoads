@@ -127,7 +127,8 @@ public class hqCode {
 			}
 			//else if ((dist_btw_HQs < 900 || encamps.length < area/10) && Clock.getRoundNum() < 300)
 			else {
-				if (soldiers < 10) msg.send(Action.RALLY_AT,  rally_point); //rally_point = myHQ.add(dir2enemyHQ, 9);
+				int swarmSize = (int)Math.sqrt(dist_btw_HQs)/2;
+				if (soldiers < swarmSize) msg.send(Action.RALLY_AT,  rally_point); //rally_point = myHQ.add(dir2enemyHQ, 9);
 				else
 				{
 					MapLocation frontLines = whichSector(rc);
