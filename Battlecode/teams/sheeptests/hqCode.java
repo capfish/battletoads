@@ -8,6 +8,7 @@ import battlecode.common.RobotController;
 import battlecode.common.Upgrade;
 
 public class hqCode {
+    public static MapLocation[] encamps;
     private static Direction randomDir(RobotController rc) {
         Direction dir = Direction.values()[(int)(Math.random()*8)];
         if(rc.canMove(dir)) return dir;
@@ -25,7 +26,8 @@ public class hqCode {
 				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 				else rc.spawn(randomDir(rc));
 			}*/
-			 rc.spawn(rc.getLocation().directionTo(enemyHQ));
+                    encamps = rc.senseEncampmentSquares(rc.getLocation(), 10000, rc.getTeam().opponent);
+                    rc.spawn(rc.getLocation().directionTo(enemyHQ));
 		}
 	}
 
