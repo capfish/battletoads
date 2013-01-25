@@ -1,4 +1,4 @@
-package team161;
+package attitudebot;
 
 public enum Action {
 	

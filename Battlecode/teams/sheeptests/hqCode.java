@@ -1,5 +1,6 @@
 package sheeptests;
 
+import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -15,7 +16,7 @@ public class hqCode {
 
 	public static void hqRun(RobotController rc, MapLocation enemyHQ) throws GameActionException {
 		if (rc.isActive()) {
-			if (rc.getTeamPower() < 50) {
+			/*if (rc.getTeamPower() < 50) {
 				if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 				else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
 				else rc.researchUpgrade(Upgrade.NUKE);
@@ -23,7 +24,8 @@ public class hqCode {
 				if (Math.random() < 0.2) rc.spawn(randomDir(rc));
 				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 				else rc.spawn(randomDir(rc));
-			}
+			}*/
+			 rc.spawn(rc.getLocation().directionTo(enemyHQ));
 		}
 	}
 

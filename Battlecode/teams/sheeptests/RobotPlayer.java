@@ -44,9 +44,14 @@ public class RobotPlayer {
         else return randomDir(rc);
     }
 	private static void soldierRun(RobotController rc) throws GameActionException {
+		Bug b = new Bug(rc.senseEnemyHQLocation(), rc);
+		while (true) {
+			b.go();
+			rc.yield();
+		}
 		//MapLocation[] neutralMines = rc.senseMineLocations(rc.getLocation(), 2, Team.NEUTRAL);
 		//MapLocation[] enemyMines = rc.senseMineLocations(rc.getLocation(), 2, rc.getTeam().opponent());
-        if (rc.senseEncampmentSquare(rc.getLocation())) {
+        /*if (rc.senseEncampmentSquare(rc.getLocation())) {
         	if (rc.senseCaptureCost() < rc.getTeamPower()) rc.captureEncampment(RobotType.ARTILLERY);
         	return;
         }
@@ -56,6 +61,6 @@ public class RobotPlayer {
         	Direction dir = rc.getLocation().directionTo(nearbyEncampments[0]);
             if (rc.canMove(dir)) rc.move(dir);
             else rc.move(randomDir(rc));
-        } else rc.move(randomDir(rc));
+        } else rc.move(randomDir(rc));*/
 	}
 }
