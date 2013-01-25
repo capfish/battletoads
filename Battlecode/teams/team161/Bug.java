@@ -35,14 +35,35 @@ public class Bug {
 		else initTurn = 1;
 		turnDir = initTurn;
 	}
+	public void retreat(MapLocation loc) throws GameActionException {
+		Direction dir = rc.getLocation().directionTo(loc).opposite();
+		if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) == null) rc.move(dir);
+		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) == null) rc.move(dir.rotateLeft());
+		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) == null) rc.move(dir.rotateRight());
+		else if (rc.canMove(dir)){
+			rc.defuseMine(rc.getLocation().add(dir));
+			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
+		} else if (rc.canMove(dir.rotateLeft())){
+			rc.defuseMine(rc.getLocation().add(dir.rotateLeft()));
+			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
+		} else if (rc.canMove(dir.rotateRight())){
+			rc.defuseMine(rc.getLocation().add(dir.rotateRight()));
+			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
+		}
+
+	}
 	public void go() throws GameActionException {
-		/*if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 16) {
+		if (rc.getLocation().distanceSquaredTo(target) <= 2) return;
+		if (rc.getLocation().distanceSquaredTo(target) > 25) {
 			if (Clock.getRoundNum() > 400) {
-			Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 10, rc.getTeam().opponent());
-			Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 4, rc.getTeam());
-			if (enemies.length > 0 && friends.length < 1) return; //rc.move(rc.getLocation().directionTo(rc.senseHQLocation()));
+				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 18, rc.getTeam().opponent());
+				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 8, rc.getTeam());
+				if (enemies.length > 0 && friends.length < 2) {
+					retreat(rc.senseRobotInfo(enemies[0]).location);
+					return;
+				}
 			}
-		}*/
+		}
 		rc.setIndicatorString(1, "turnDir" + turnDir);
 		dir2target = rc.getLocation().directionTo(target);
 		if (burrow) {
