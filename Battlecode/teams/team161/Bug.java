@@ -46,7 +46,7 @@ public class Bug {
 		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) != null) defuse(rc, dir.rotateRight());		
 	}
 	private void defuse(RobotController rc, Direction dir) throws GameActionException {
-		rc.defuseMine(rc.getLocation().add(dir.rotateLeft()));
+		rc.defuseMine(rc.getLocation().add(dir));
 		rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
 	}
 	
