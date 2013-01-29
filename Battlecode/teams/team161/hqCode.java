@@ -180,7 +180,7 @@ public class hqCode {
 						roundsTillCaptured = 25;
 						msg.send(Action.CAPTURING, msg.location);
 					}
-					else if (msg.action == Action.KILLING) {
+					else if (msg.action == Action.KILLING && msg.location.equals(enemyHQ)) {
 						killing = 100;
 					}
 					else if (msg.action == Action.CAP_SHIELD) {

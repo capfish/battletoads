@@ -90,7 +90,7 @@ public class Bug {
 		rc.setIndicatorString(1, "turnDir" + turnDir);
 		dir2target = rc.getLocation().directionTo(target);
 		if (burrow) {
-			MapLocation newloc = rc.getLocation().add(dir2target);
+			MapLocation newloc = rc.getLocation();//.add(dir2target);
 			if (!hasMine(newloc.add(dir2target)) ||
 				!hasMine(newloc.add(dir2target.rotateLeft())) ||
 				!hasMine(newloc.add(dir2target.rotateRight()))) {
