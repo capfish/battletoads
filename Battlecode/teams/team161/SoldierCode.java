@@ -89,7 +89,7 @@ public class SoldierCode {
 	    			}
 	    			msgCount--;
     			}
-    			if (rush) rush();
+    			if (rush && !(distress)) rush();
     			else {
 		    		if (distress == true)
 		    		{
