@@ -88,8 +88,15 @@ public class encampCode {
 		return false;
 	}
 
-	public static void generatorRun(RobotController rc) {
-		//UNUSED
+	public static void shieldsRun(RobotController rc) throws GameActionException {
+		Message msg = new Message(rc);
+		while (true) {
+			if (rc.getEnergon() < 60) {
+				msg.reset();
+				msg.send(Action.DISTRESS, rc.getLocation());
+			}
+			rc.yield();
+		}
 	}
 
 }

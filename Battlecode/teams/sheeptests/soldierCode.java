@@ -12,15 +12,19 @@ public class soldierCode {
         
         while(true){
             myLoc = rc.getLocation();
-            enemy = rc.getTeam().opponent;
+            enemy = rc.getTeam().opponent();
             numEnemyMines = rc.senseMineLocations(myLoc, 10000, enemy).length;
         
             if (rc.isActive()) {
+            	/*            }
                 if (numEnemyMines <= 3) {
                     b.go();
                     rc.yield();
                 } else {
-                    
+                */
+            	if (numEnemyMines <= 3) {
+            		
+            	}
             }
         }
     }

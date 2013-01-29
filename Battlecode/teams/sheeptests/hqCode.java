@@ -26,7 +26,6 @@ public class hqCode {
 				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
 				else rc.spawn(randomDir(rc));
 			}*/
-                    encamps = rc.senseEncampmentSquares(rc.getLocation(), 10000, rc.getTeam().opponent);
                     rc.spawn(rc.getLocation().directionTo(enemyHQ));
 		}
 	}

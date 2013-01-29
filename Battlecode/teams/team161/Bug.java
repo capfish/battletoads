@@ -52,13 +52,22 @@ public class Bug {
 		}
 
 	}
+	public void shieldGo() throws GameActionException {
+		if (rc.getLocation().distanceSquaredTo(target) > 49) go();
+		else {
+			dir2target = rc.getLocation().directionTo(target);
+			if (rc.canMove(dir2target)) rc.move(dir2target);
+			else if (rc.canMove(dir2target.rotateLeft())) rc.move(dir2target.rotateLeft());
+			else if (rc.canMove(dir2target.rotateRight())) rc.move(dir2target.rotateRight());
+		}
+	}
 	public void go() throws GameActionException {
 		if (rc.getLocation().distanceSquaredTo(target) <= 2) return;
-		if (rc.getLocation().distanceSquaredTo(target) > 25) {
+		if (rc.getLocation().distanceSquaredTo(target) > 81) {
 			if (Clock.getRoundNum() > 400) {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 18, rc.getTeam().opponent());
 				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 8, rc.getTeam());
-				if (enemies.length > 0 && friends.length < 2) {
+				if (enemies.length > 0 && friends.length < 3) {
 					retreat(rc.senseRobotInfo(enemies[0]).location);
 					return;
 				}
@@ -104,14 +113,17 @@ public class Bug {
 			toggleDirection();
 			if (turnDir == initTurn) {
 			stuck = rc.getLocation();
-			System.out.println("round " + Clock.getRoundNum() + " turnDir " + turnDir);
+			//System.out.println("round " + Clock.getRoundNum() + " turnDir " + turnDir);
 			}
 		}
 		dir = turn(dir2target);
-		rc.move(dir);
-		prev = dir;
-		distTravelled ++;	//if dist travelled > mineRatio * timeToDefuseMine * distBtwHeadquarters, broadcast shit
-		rc.setIndicatorString(0, "depth = " + depth);
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+			prev = dir;
+			distTravelled ++;	//if dist travelled > mineRatio * timeToDefuseMine * distBtwHeadquarters, broadcast shit
+			rc.setIndicatorString(0, "depth = " + depth);
+		}
+		
 
 	}
 	public void toggleDirection() {

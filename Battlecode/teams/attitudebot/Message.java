@@ -16,7 +16,7 @@ import battlecode.common.RobotType;
  */
 
 public class Message {
-	private static int MULT = 743; //prime
+	private static int MULT = 691; //prime
 	private static int q = 593; //anything
 	private static int p = 853; //prime
 	private static int shift = 12;
