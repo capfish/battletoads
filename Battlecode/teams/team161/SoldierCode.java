@@ -1,7 +1,5 @@
 package team161;
 
-import team161.Action;
-import team161.Message;
 import battlecode.common.*;
 
 public class SoldierCode {
@@ -9,6 +7,7 @@ public class SoldierCode {
 	private static MapLocation target;
 	private static Direction prev;
 	private static Message msg;
+	private static Bug b;
 	private static MapLocation enemyHQ;
 	private static MapLocation myHQ;
 	private static Team myTeam;
@@ -17,21 +16,22 @@ public class SoldierCode {
     private static int suppliers = 0;
     private static MapLocation spawnSpot = null;
     private static int shield = 20;
+	private static boolean getShield = false;
+
 
     public static void soldierRun(RobotController rc) throws GameActionException {
+		enemyHQ = rc.senseEnemyHQLocation();
+		myHQ = rc.senseHQLocation();
+		myTeam = rc.getTeam();
+		enemyTeam = myTeam.opponent();
     	msg = new Message(rc);
+    	b = new Bug(enemyHQ, rc);
+    	
     	while (true)
     	{
-    		//SET CONSTANTS
 			myLoc = rc.getLocation();
-			enemyHQ = rc.senseEnemyHQLocation();
-			myHQ = rc.senseHQLocation();
-			myTeam = rc.getTeam();
-			enemyTeam = myTeam.opponent();
 			target = enemyHQ;
     		
-    		//MSG INITIALIZATION
-			msg.reset();
 			rc.setIndicatorString(0, "");
 			rc.setIndicatorString(1, "");
     		
@@ -39,70 +39,67 @@ public class SoldierCode {
 //	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, enemyTeam);
 //	    	Robot[] friends = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, myTeam);
 
-	    	//IF ACTIVE
 	    	if (rc.isActive())
 	    	{
 	    		int msgCount = -1;
 	    		boolean blankMsg = false;
 	    		boolean distress = false;
 	    		boolean attack = false;
+	    		boolean rush = false;
+				msg.reset();
 	    		
-	    		boolean rush = toRush(rc);
-	    		
-	    		while (true)
-	    		{
-	    			//RUSH CODE
-	    			if (rush)
+	    		while (true) {
+    				msg.receive(msgCount);
+	    			if (msg.action == null)
 	    			{
-	    				rush(rc);
+	    				if (blankMsg == true) break;
+	    				blankMsg = true;
 	    			}
-	    			else
+	    			else if (msg.action == Action.RUSH) {
+	    				rush = true;
+	    				break;
+	    			}
+	    			else if (msg.action == Action.DISTRESS)
 	    			{
-	    				msg.receive(msgCount);
-		    			if (msg.action == null)
-		    			{
-		    				if (blankMsg == true) break;
-		    				blankMsg = true;
-		    			}
-		    			else if (msg.action == Action.DISTRESS)
-		    			{
-		    				distress = true;
-		    			}
-		    			else if (msg.action == Action.GEN_SUP)
-		    			{
-		    				generators = msg.location.x;
-		    				suppliers = msg.location.y;
-		    			}
-		    			else if (msg.action == Action.RALLY_AT)
-		    			{
-		    				target = msg.location;
-		    			}
-		    			else if (msg.action == Action.ATTACK)
-		    			{
-		    				target = enemyHQ;
-		    				attack = true;
-		    			}
-		    			else if (msg.action == Action.DONT_CAP)
-		    			{
-		    				spawnSpot = msg.location;
-		    				rc.setIndicatorString(0, "DUDE I HEARD YA");
-		    			}
-		    			msgCount--;
+	    				distress = true;
 	    			}
-	    		}
-	    		if (distress == true)
-	    		{
-	    			attack = true;
-	    			if (myLoc.distanceSquaredTo(enemyHQ) < 25)
+	    			else if (msg.action == Action.GEN_SUP)
+	    			{
+	    				generators = msg.location.x;
+	    				suppliers = msg.location.y;
+	    			}
+	    			else if (msg.action == Action.RALLY_AT)
+	    			{
+	    				target = msg.location;
+	    			}
+	    			else if (msg.action == Action.ATTACK)
+	    			{
 	    				target = enemyHQ;
-	    			else
-	    				target = myHQ;
-	    		}
-	    		if (attack == true)
-	    			travelMode(rc);
-	    		else if (!mineMode(rc))
-	    			if (!colonizeMode(rc))
-	    				travelMode(rc);
+	    				attack = true;
+	    			}
+	    			else if (msg.action == Action.DONT_CAP)
+	    			{
+	    				spawnSpot = msg.location;
+	    				rc.setIndicatorString(0, "DUDE I HEARD YA");
+	    			}
+	    			msgCount--;
+    			}
+    			if (rush) rush(rc);
+    			else {
+		    		if (distress == true)
+		    		{
+		    			attack = true;
+		    			if (myLoc.distanceSquaredTo(enemyHQ) < 25)
+		    				target = enemyHQ;
+		    			else
+		    				target = myHQ;
+		    		}
+		    		if (attack == true)
+		    			travelMode(rc);
+		    		else if (!mineMode(rc))
+		    			if (!colonizeMode(rc))
+		    				travelMode(rc);
+    			}
 	    		rc.yield();
 	    	}
     	}
@@ -111,19 +108,11 @@ public class SoldierCode {
     
     /*---------------RUSH CODE------------------*/
     
-    public static boolean toRush(RobotController rc)
-    {
-    	if (Clock.getRoundNum() < 200)
-    		return true;
-    	return false;
-    }
-    
     private static void rush(RobotController rc) throws GameActionException
     {
-    	Bug b = new Bug(enemyHQ, rc);
-    	boolean getShield = false;
-    	while (true) {
+    	//while (true) {
 			msg.reset();
+			if (rc.getLocation().isAdjacentTo(enemyHQ)) msg.send(Action.KILLING, enemyHQ);
 			msg.receive(-1);
 			if (msg.action == Action.CAP_SHIELD ){//&& b.target.equals(rc.senseEnemyHQLocation())) {
 				MapLocation[] encamps = rc.senseEncampmentSquares(rc.getLocation(), 100, Team.NEUTRAL);
@@ -134,6 +123,7 @@ public class SoldierCode {
 						break;
 					}
 			} else if (msg.action == Action.RALLY_AT && shield > 0) {
+				System.out.println("rally at " + msg.location);
 				if (rc.getLocation().distanceSquaredTo(msg.location) <= 2) {
 					shield --;
 				}
@@ -144,21 +134,18 @@ public class SoldierCode {
 				getShield = false;
 			}
 			if (rc.isActive()) {
-				if (shield <= 0) b.shieldGo();
-				else b.go();
-				rc.setIndicatorString(0, "target " + b.target + " getShield " + getShield);
-				rc.yield();
 				if (rc.getLocation().equals(b.target) && getShield) {
 					msg.reset();
 					rc.captureEncampment(RobotType.SHIELDS);
 					msg.send(Action.CAP_SHIELD, rc.getLocation());
 					System.out.println("GOT HERE SOLDIERCODE");
 				}
+				if (shield <= 0) {b.shieldGo(); System.out.println("shit goes down" + shield);}
+				else b.go();
+				rc.setIndicatorString(0, "target " + b.target + " getShield " + getShield);
 			}
-		}
+		//}
     }
-    
-    
     /*-----------------RUSH END------------------*/
     
     
@@ -185,7 +172,6 @@ public class SoldierCode {
 			//rc.setIndicatorString(1, "target " + target + " moved in direction " + dir);
 
 		} else rc.setIndicatorString(1, "target " + target + " something is wrong");
-
 	}
 	
     private static Direction randomDir(RobotController rc, int depth) {
@@ -228,7 +214,7 @@ public class SoldierCode {
         	capture(rc);
         	return true;
     	}
-    	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 100, Team.NEUTRAL);
+    	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 80, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
     	if (encamps.length != 0) rc.setIndicatorString(1, "# neutral encampments > 0");
     	MapLocation encampTarget = encamps[(int)Math.random()*encamps.length];
@@ -340,21 +326,9 @@ public class SoldierCode {
         Team t = rc.senseMine(myLoc.add(dir));
         if (t == Team.NEUTRAL || t == enemyTeam) {
             rc.defuseMine(myLoc.add(dir));
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
-            rc.yield();
+            rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();
         }
     }
     
 	/*--------------MINE CODE END--------------------*/
-
 }

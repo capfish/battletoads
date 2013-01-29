@@ -7,6 +7,7 @@ import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.Team;
 
 public class Bug {
@@ -36,7 +37,15 @@ public class Bug {
 		else initTurn = 1;
 		turnDir = initTurn;
 	}
-	public void retreat(MapLocation loc) throws GameActionException {
+	public void retreat(Robot r) throws GameActionException {
+		RobotInfo info = rc.senseRobotInfo(r);
+		MapLocation loc = info.location;
+		if (info.roundsUntilMovementIdle != 0) {
+			Direction dir = rc.getLocation().directionTo(loc);
+			if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) == null) rc.move(dir);
+			return;
+		}
+		if (info.robot.getID() > rc.getRobot().getID()) return;
 		Direction dir = rc.getLocation().directionTo(loc).opposite();
 		if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) == null) rc.move(dir);
 		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) == null) rc.move(dir.rotateLeft());
@@ -52,6 +61,7 @@ public class Bug {
 	
 	public void shieldGo() throws GameActionException {
 		if (rc.getLocation().distanceSquaredTo(target) > 49) go();
+		else if (rc.getLocation().equals(target)) return;
 		else {
 			dir2target = rc.getLocation().directionTo(target);
 			if (rc.canMove(dir2target)) rc.move(dir2target);
@@ -67,7 +77,7 @@ public class Bug {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 18, rc.getTeam().opponent());
 				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 8, rc.getTeam());
 				if (enemies.length > 0 && friends.length < 3) {
-					retreat(rc.senseRobotInfo(enemies[0]).location);
+					retreat(enemies[0]); //WANT TO RETREAT ONLY IF OUR ROBOT ID IS LESS THAN ENEMIES. else they do damage to us and we don't do any damage to them.
 					return;
 				}
 			}
@@ -75,14 +85,17 @@ public class Bug {
 		rc.setIndicatorString(1, "turnDir" + turnDir);
 		dir2target = rc.getLocation().directionTo(target);
 		if (burrow) {
-			rc.setIndicatorString(0, "burrowing");
 			MapLocation newloc = rc.getLocation().add(dir2target);
+			if (rc.senseMine(newloc.add(dir2target)) == null ||					//CHANGE TO NOT CARE ABOUT OUR MINES
+					rc.senseMine(newloc.add(dir2target.rotateLeft())) == null ||
+					rc.senseMine(newloc.add(dir2target.rotateRight())) == null) {
+				burrow = false;
+				return;
+			}
+			rc.setIndicatorString(0, "burrowing");
 			defuse(rc, dir2target);
 			if (rc.canMove(dir2target)) {
 				rc.move(dir2target);
-				if (rc.senseMine(newloc.add(dir2target)) == null ||					//CHANGE TO NOT CARE ABOUT OUR MINES
-					rc.senseMine(newloc.add(dir2target.rotateLeft())) == null ||
-					rc.senseMine(newloc.add(dir2target.rotateRight())) == null) burrow = false;
 				return;
 			}
 		}
@@ -117,8 +130,6 @@ public class Bug {
 			distTravelled ++;	//if dist travelled > mineRatio * timeToDefuseMine * distBtwHeadquarters, broadcast shit
 			rc.setIndicatorString(0, "depth = " + depth);
 		}
-		
-
 	}
 	public void toggleDirection() {
 		if (turnDir == 1) turnDir = 7;
