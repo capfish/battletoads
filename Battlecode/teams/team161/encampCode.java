@@ -57,5 +57,13 @@ public class encampCode {
 			rc.yield();
 		}
 	}
+	
+	public static void generatorRun(RobotController rc) throws GameActionException {
+		while (true) {
+			// Or, broadcast before suicide and don't suicide soon after suicide. (instead of upping the prime)
+			//if (rc.getTeamPower() > 1000 && (Clock.getRoundNum() % 743 == rc.getRobot().getID() % 743)) rc.suicide();
+			rc.yield();
+		}
+	}
 
 }

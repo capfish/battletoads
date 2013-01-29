@@ -90,11 +90,13 @@ public class SoldierCode {
 		    			else
 		    				target = myHQ;
 		    		}
-		    		if (attack == true)
-		    			travelMode();
-		    		else if (!mineMode())
-		    			if (!colonizeMode())
+		    		if (attack == true) {
+		    			//if (!attackMode())
 		    				travelMode();
+		    		} else if (!attackMode())
+		    			if (!mineMode())
+		    				if (!colonizeMode())
+		    					travelMode();
     			}
 	    		rc.yield();
 	    	}
@@ -143,6 +145,22 @@ public class SoldierCode {
 		//}
     }
     /*-----------------RUSH END------------------*/
+    
+    /*-----------------ATTACK CODE------------------*/
+    private static boolean attackMode() throws GameActionException {
+    	Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 25, rc.getTeam().opponent());
+    	for (Robot enemy: enemies) {
+    		RobotInfo info = rc.senseRobotInfo(enemy);
+    		if(info.roundsUntilMovementIdle > 1) {
+    			b.target = info.location; //perhaps want to keep track of the same robot.
+        		b.go();
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    /*-----------------ATTACK END-------------------*/
     
     
 	/*--------------TRAVEL CODE--------------------*/
@@ -220,16 +238,12 @@ public class SoldierCode {
     	return false;
     }
     private static boolean capture() throws GameActionException{
-    	if (rc.senseCaptureCost() * 2 > rc.getTeamPower()) {
-            //rc.setIndicatorString(1, "not enough power");
-            return false;
-    	}
+    	if (rc.senseCaptureCost() > rc.getTeamPower()) return false;
     	//broadcast that its colonizing shit so people don't try to go to it.
     	myLoc = rc.getLocation();
-    	RobotType capturedEncamp;
-    	if (rc.getTeamPower() < 2 *rc.senseCaptureCost()) { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
+    	if (rc.senseCaptureCost() * 2 > rc.getTeamPower()) { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
     	//else if (surrounded(rc, myLoc)) rc.captureEncampment(RobotType.MEDBAY);
-    	//else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64) rc.captureEncampment(RobotType.ARTILLERY);
+    	//else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64 && myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()) rc.captureEncampment(RobotType.ARTILLERY);
     	else if ((myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()
                   || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateLeft()
                   || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateRight()

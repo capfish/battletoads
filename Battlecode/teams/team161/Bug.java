@@ -13,7 +13,7 @@ import battlecode.common.Team;
 public class Bug {
 	public MapLocation target;
 	public static RobotController rc;
-	public static Direction prev;
+	public Direction prev;
 	public static int distTravelled;
 	private static int turnDir;
 	private static int depth = 1;

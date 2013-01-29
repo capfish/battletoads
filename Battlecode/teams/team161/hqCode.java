@@ -14,10 +14,9 @@ public class hqCode {
 	private static MapLocation shieldLoc = null;
 	private static Message msg;
 	private static RobotController rc;	
-	private static int width, height, area, num_suppliers, num_generators, dist_btw_HQs, roundsTillCaptured, killing;
+	private static int width, height, num_suppliers, num_generators, dist_btw_HQs, roundsTillCaptured, killing;
 	private static Direction dir2enemyHQ;
 	private static Team spawnMine;
-	private static MapLocation[] encamps;
 	private static MapLocation myHQ, enemyHQ, rally_point;
 	private static Team myTeam, opponent;
 	private static MapLocation spawnSpot = null;
@@ -143,8 +142,6 @@ public class hqCode {
 		killing = 200;
 		rc = rc_;
 		enemyHQ = enemyHQ_;
-		area = height*width;
-		encamps = rc.senseEncampmentSquares(rc.getLocation(), 5000, Team.NEUTRAL);
 		msg = new Message(rc);
 		num_suppliers = num_generators = roundsTillCaptured = 0;
 		myHQ = rc.senseHQLocation();
