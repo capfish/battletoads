@@ -39,7 +39,10 @@ public class SoldierCode {
 			rc.setIndicatorString(1, "");
     		
     		//DATA
-//	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, enemyTeam);
+	    	Robot[] enemy = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, enemyTeam);
+	    	//Message HQ with location of FRIENDLY ROBOT who sees enemy robots.
+	    	if (enemy.length > 0)
+	    		msg.send(Action.ENEMY, myLoc);
 //	    	Robot[] friends = rc.senseNearbyGameObjects(rc.getRobot().getClass(), myLoc, RobotType.SOLDIER.sensorRadiusSquared, myTeam);
 
 	    	if (rc.isActive())
