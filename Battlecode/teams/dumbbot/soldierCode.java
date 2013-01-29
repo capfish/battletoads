@@ -293,7 +293,7 @@ public class soldierCode {
             Team t = rc.senseMine(myLoc.add(dir));
             if (t == Team.NEUTRAL || t == RobotPlayer.enemyTeam) {
                 rc.defuseMine(myLoc.add(dir));
-                rc.yield();
+                for (int i = 0; i < 12; i++) rc.yield();
             }
         }
         
