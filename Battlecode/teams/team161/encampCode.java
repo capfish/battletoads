@@ -18,22 +18,27 @@ public class encampCode {
         width = rc.getMapWidth();
         rangeS = RobotType.ARTILLERY.attackRadiusMaxSquared;
         range = (int)Math.sqrt(rangeS);
-        rc.setIndicatorString(1, " roundsTillActive " + rc.roundsUntilActive());
-        Robot[] eenemies = rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), rangeS, rc.getTeam().opponent());
-        rc.setIndicatorString(0, "num enemies " + eenemies.length);
-        if (rc.isActive()) {
-            MapLocation eHQ = rc.senseEnemyHQLocation();
-            if (rc.canAttackSquare(eHQ)) rc.attackSquare(eHQ);  // if enemy HQ within attack distance: attack it.
-            else {
-                Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), rangeS, rc.getTeam().opponent());
-                for (Robot enemy: enemies) {
-                    MapLocation enemy_loc = rc.senseRobotInfo(enemy).location;
-                    if (isGood(enemy_loc)) {
-                        rc.attackSquare(enemy_loc);
-                        break;
-                    }
-                }
-            }
+		Message msg = new Message(rc);
+		msg.reset();
+		msg.send(Action.CAP_ART, rc.getLocation());
+        while (true) {
+	        rc.setIndicatorString(1, " roundsTillActive " + rc.roundsUntilActive());
+	        Robot[] eenemies = rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), rangeS, rc.getTeam().opponent());
+	        rc.setIndicatorString(0, "num enemies " + eenemies.length);
+	        if (rc.isActive()) {
+	            MapLocation eHQ = rc.senseEnemyHQLocation();
+	            if (rc.canAttackSquare(eHQ)) rc.attackSquare(eHQ);  // if enemy HQ within attack distance: attack it.
+	            else {
+	                Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getLocation(), rangeS, rc.getTeam().opponent());
+	                for (Robot enemy: enemies) {
+	                    MapLocation enemy_loc = rc.senseRobotInfo(enemy).location;
+	                    if (isGood(enemy_loc)) {
+	                        rc.attackSquare(enemy_loc);
+	                        break;
+	                    }
+	                }
+	            }
+	        }
         }
     }
     public static boolean isGood(MapLocation loc) throws GameActionException {
@@ -49,6 +54,8 @@ public class encampCode {
 	
 	public static void shieldsRun(RobotController rc) throws GameActionException {
 		Message msg = new Message(rc);
+		msg.reset();
+		msg.send(Action.CAP_SHIELD, rc.getLocation());
 		while (true) {
 			if (rc.getEnergon() < 60) {
 				msg.reset();
@@ -59,9 +66,21 @@ public class encampCode {
 	}
 	
 	public static void generatorRun(RobotController rc) throws GameActionException {
+		Message msg = new Message(rc);
+		msg.reset();
+		msg.send(Action.CAP_GEN, rc.getLocation());
 		while (true) {
 			// Or, broadcast before suicide and don't suicide soon after suicide. (instead of upping the prime)
 			//if (rc.getTeamPower() > 1000 && (Clock.getRoundNum() % 743 == rc.getRobot().getID() % 743)) rc.suicide();
+			rc.yield();
+		}
+	}
+	
+	public static void supplierRun(RobotController rc) throws GameActionException {
+		Message msg = new Message(rc);
+		msg.reset();
+		msg.send(Action.CAP_SUP, rc.getLocation());
+		while (true) {
 			rc.yield();
 		}
 	}

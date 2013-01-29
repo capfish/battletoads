@@ -137,6 +137,7 @@ public class hqCode {
 			}
 		}
 		msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
+		if (roundsTillCaptured > 0) msg.send(Action.CAPTURING, rc.getLocation());
     }
 	public static void hqRun(RobotController rc_, MapLocation enemyHQ_) throws GameActionException {
 		killing = 200;

@@ -18,6 +18,7 @@ public class SoldierCode {
     private static int shield = 20;
 	private static boolean getShield = false;
 	private static RobotController rc;
+	private static boolean canCapture;
 
 
     public static void soldierRun(RobotController rc_) throws GameActionException {
@@ -48,6 +49,7 @@ public class SoldierCode {
 	    		boolean distress = false;
 	    		boolean attack = false;
 	    		boolean rush = false;
+	    		boolean canCapture = true;
 				msg.reset();
 	    		
 	    		while (true) {
@@ -73,6 +75,7 @@ public class SoldierCode {
 	    				target = enemyHQ; //prolly target should be msg.location
 	    				attack = true;
 	    			}
+	    			else if (msg.action == Action.CAPTURING) canCapture = false;
 	    			else if (msg.action == Action.DONT_CAP)
 	    			{
 	    				spawnSpot = msg.location;
@@ -239,24 +242,22 @@ public class SoldierCode {
     }
     private static boolean capture() throws GameActionException{
     	if (rc.senseCaptureCost() > rc.getTeamPower()) return false;
-    	//broadcast that its colonizing shit so people don't try to go to it.
     	myLoc = rc.getLocation();
-    	if (rc.senseCaptureCost() * 2 > rc.getTeamPower()) { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
-    	//else if (surrounded(rc, myLoc)) rc.captureEncampment(RobotType.MEDBAY);
-    	//else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64 && myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()) rc.captureEncampment(RobotType.ARTILLERY);
-    	else if ((myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()
+    	if (rc.senseCaptureCost() * 2 > rc.getTeamPower()) rc.captureEncampment(RobotType.GENERATOR);
+    	else if (myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite() && !surrounded(myLoc)) rc.captureEncampment(RobotType.ARTILLERY);
+    	else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64 && (myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()
                   || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateLeft()
                   || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateRight()
                   || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateLeft()
-                  || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateRight())
-                 && !surrounded(myLoc))
-    	    { rc.captureEncampment(RobotType.ARTILLERY); msg.send(Action.CAP_ART, myLoc); }
-        else if (myLoc.distanceSquaredTo(enemyHQ) < 64) { rc.captureEncampment(RobotType.ARTILLERY); msg.send(Action.CAP_ART, myLoc); }
+                  || myLoc.directionTo(myHQ) == myLoc.directionTo(enemyHQ).opposite().rotateRight()))
+    	    rc.captureEncampment(RobotType.ARTILLERY);
+        else if (myLoc.distanceSquaredTo(enemyHQ) < 64) rc.captureEncampment(RobotType.ARTILLERY);
         //else if (RobotPlayer.myHQ.directionTo(myLoc) == RobotPlayer.myHQ.directionTo(RobotPlayer.enemyHQ)
         //	  && RobotPlayer.enemyHQ.directionTo(myLoc) == RobotPlayer.enemyHQ.directionTo(RobotPlayer.myHQ))
         //	rc.captureEncampment(RobotType.ARTILLERY);
-        else if (generators >= 3 * suppliers) { rc.captureEncampment(RobotType.SUPPLIER); msg.send(Action.CAP_SUP, myLoc); }
-        else { rc.captureEncampment(RobotType.GENERATOR); msg.send(Action.CAP_GEN, myLoc); }
+        else if (generators >= 3 * suppliers) rc.captureEncampment(RobotType.SUPPLIER);
+        else rc.captureEncampment(RobotType.GENERATOR);
+    	msg.send(Action.CAPTURING, myLoc);
         return true;
     }
     
