@@ -12,27 +12,27 @@ import battlecode.common.Team;
 
 public class Bug {
 	public MapLocation target;
-	public RobotController rc;
-	public Direction prev;
-	public int distTravelled;
-	public int turnDir;
-	public int depth = 1;
-	public Direction dir2target;
-	public MapLocation stuck;
-	public boolean burrow;
-	public int dumb = 0;
-	public int dist_btw_HQs;
-	public int initTurn;
+	public static RobotController rc;
+	public static Direction prev;
+	public static int distTravelled;
+	private static int turnDir;
+	private static int depth = 1;
+	private static Direction dir2target;
+	private static MapLocation stuck;
+	private static boolean burrow;
+	private static int dumb = 0;
+	private static int dist_btw_HQs;
+	private static int initTurn;
 	
-	public Bug(MapLocation target, RobotController rc) {
-		this.target = target;
-		this.rc = rc;
-		this.prev = rc.getLocation().directionTo(target);
-		this.distTravelled = 0;
-		this.dir2target = rc.getLocation().directionTo(target);
-		this.stuck = null;
-		this.burrow = false;
-		this.dist_btw_HQs = (int) Math.sqrt(rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()));
+	public Bug(MapLocation target_, RobotController rc_) {
+		target = target_;
+		rc = rc_;
+		prev = rc.getLocation().directionTo(target);
+		distTravelled = 0;
+		dir2target = rc.getLocation().directionTo(target);
+		stuck = null;
+		burrow = false;
+		dist_btw_HQs = (int) Math.sqrt(rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()));
 		if (Clock.getRoundNum()/10 % 7 < 4) initTurn = 7;
 		else initTurn = 1;
 		turnDir = initTurn;
@@ -54,7 +54,7 @@ public class Bug {
 		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) != null) defuse(rc, dir.rotateLeft());
 		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) != null) defuse(rc, dir.rotateRight());		
 	}
-	private void defuse(RobotController rc, Direction dir) throws GameActionException {
+	private static void defuse(RobotController rc, Direction dir) throws GameActionException {
 		rc.defuseMine(rc.getLocation().add(dir));
 		rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
 	}
@@ -131,11 +131,11 @@ public class Bug {
 			rc.setIndicatorString(0, "depth = " + depth);
 		}
 	}
-	public void toggleDirection() {
+	private static void toggleDirection() {
 		if (turnDir == 1) turnDir = 7;
 		else turnDir = 1;
 	}
-	public Direction turn(Direction dir) throws GameActionException {
+	private static Direction turn(Direction dir) throws GameActionException {
 		if (rc.canMove(dir)) {
 			MapLocation newloc = rc.getLocation().add(dir);
 			if (rc.senseMine(newloc) != null) {
@@ -157,7 +157,7 @@ public class Bug {
 			return turn(Direction.values()[(dir.ordinal()+turnDir) % 8]);
 		}
 	}
-	public boolean thinEnough(Direction dir, MapLocation loc) {
+	private static boolean thinEnough(Direction dir, MapLocation loc) {
 		for(int i = 1; i < depth; i++) if (rc.senseMine(loc.add(dir, i)) == null) return true;
 		return false;
 	}

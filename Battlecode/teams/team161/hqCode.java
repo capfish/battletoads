@@ -80,26 +80,10 @@ public class hqCode {
 			msg.send(Action.RALLY_AT, shieldLoc);
 			rc.setIndicatorString(0, "dont care about shield");
 		}
-		if (rc.isActive()) {
-			/*if (rc.getTeamPower() < 50) {
-				if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
-				else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
-				else rc.researchUpgrade(Upgrade.NUKE);
-			} else {
-				if (Math.random() < 0.2) rc.spawn(randomDir(rc));
-				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
-				else rc.spawn(randomDir(rc));
-			}*/
-			
-	         
-			 if (rc.canMove(rc.getLocation().directionTo(enemyHQ))) rc.spawn(rc.getLocation().directionTo(enemyHQ));
-			 else rc.spawn(randomDir(rc, 15));
-		}
+		if (rc.isActive()) spawnSoldier(rc);
     }
     public static void HQrally() throws GameActionException {
     	rc.setIndicatorString(1, "rallymode");
-    	msg.reset();
-		if (spawnSpot != null) msg.send(Action.DONT_CAP, spawnSpot);
 		roundsTillCaptured --;
 		if (rc.isActive()) {
 			if (rc.getTeamPower() < 60) {
@@ -118,12 +102,6 @@ public class hqCode {
 		
 		Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
 		int soldiers = friends.length - rc.senseAlliedEncampmentSquares().length;
-/*
-		for (Robot f : friends)
-			if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
-				soldiers++;
-		Robot[] fEncamps = rc.senseAlliedEncampmentSquares()
-*/			
 		if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 			if (soldiers < 15) {
 //				rally_point = myHQ.add(dir2enemyHQ, 3);
@@ -185,6 +163,7 @@ public class hqCode {
 		
 		while(true) {
 			msg.reset();
+			if (spawnSpot != null) msg.send(Action.DONT_CAP, spawnSpot);
 			for (int i = 0; i < 101; i ++) {
 				msg.receive(i);
 				if (msg.action != null) {
