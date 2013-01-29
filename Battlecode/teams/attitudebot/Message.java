@@ -31,7 +31,7 @@ public class Message {
 	private static int mmask = 0x1F;    //0b0000000000000011111;
 	public Action action;
 	public MapLocation location;
-	Message(RobotController rc) {
+	public Message(RobotController rc) {
 		if (rc.getType() == RobotType.HQ) ID = -1;
 		else ID = rc.getRobot().getID() % 101;
 		this.rc = rc;
