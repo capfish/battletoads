@@ -3,6 +3,7 @@ package team161;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
@@ -40,18 +41,15 @@ public class Bug {
 		if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) == null) rc.move(dir);
 		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) == null) rc.move(dir.rotateLeft());
 		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) == null) rc.move(dir.rotateRight());
-		else if (rc.canMove(dir)){
-			rc.defuseMine(rc.getLocation().add(dir));
-			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
-		} else if (rc.canMove(dir.rotateLeft())){
-			rc.defuseMine(rc.getLocation().add(dir.rotateLeft()));
-			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
-		} else if (rc.canMove(dir.rotateRight())){
-			rc.defuseMine(rc.getLocation().add(dir.rotateRight()));
-			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
-		}
-
+		else if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) != null) defuse(rc, dir);
+		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) != null) defuse(rc, dir.rotateLeft());
+		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) != null) defuse(rc, dir.rotateRight());		
 	}
+	private void defuse(RobotController rc, Direction dir) throws GameActionException {
+		rc.defuseMine(rc.getLocation().add(dir.rotateLeft()));
+		rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
+	}
+	
 	public void shieldGo() throws GameActionException {
 		if (rc.getLocation().distanceSquaredTo(target) > 49) go();
 		else {
@@ -79,8 +77,7 @@ public class Bug {
 		if (burrow) {
 			rc.setIndicatorString(0, "burrowing");
 			MapLocation newloc = rc.getLocation().add(dir2target);
-			rc.defuseMine(newloc);
-			rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
+			defuse(rc, dir2target);
 			if (rc.canMove(dir2target)) {
 				rc.move(dir2target);
 				if (rc.senseMine(newloc.add(dir2target)) == null ||					//CHANGE TO NOT CARE ABOUT OUR MINES
@@ -89,7 +86,7 @@ public class Bug {
 				return;
 			}
 		}
-		if (/*turnDir == 7 && */rc.getLocation().equals(stuck)) {
+		if (rc.getLocation().equals(stuck)) {
 			burrow = true;
 		}
 		MapLocation loc = rc.getLocation();
@@ -100,7 +97,6 @@ public class Bug {
 			dir.rotateLeft().ordinal() == back ||
 			dir.rotateRight().ordinal() == back) {
 			rc.setIndicatorString(0, "toggled dir. prev = " + prev + " dir = " + dir);
-			//depth = 3;
 			toggleDirection();
 			if (turnDir == initTurn) stuck = rc.getLocation(); //BROADCAST STUCK SPOTS!!!
 			dir = turn(dir2target);
@@ -108,13 +104,10 @@ public class Bug {
 		if (dir.opposite().rotateLeft() == dir2target || dir.opposite().rotateRight() == dir2target) dumb ++;
 		if (dir.opposite() == dir2target ||
 				(( dir.opposite().rotateLeft() == dir2target || dir.opposite().rotateRight() == dir2target) && dumb > dist_btw_HQs/10)) {
-			//|| dir.opposite().rotateLeft() == dir2target
-			//|| dir.opposite().rotateRight() == dir2target) {
 			depth = 3;
 			toggleDirection();
 			if (turnDir == initTurn) {
 			stuck = rc.getLocation();
-			//System.out.println("round " + Clock.getRoundNum() + " turnDir " + turnDir);
 			}
 		}
 		dir = turn(dir2target);
@@ -136,9 +129,7 @@ public class Bug {
 			MapLocation newloc = rc.getLocation().add(dir);
 			if (rc.senseMine(newloc) != null) {
 				if (thinEnough(dir, newloc)) {
-					rc.defuseMine(newloc);
-					rc.setIndicatorString(0, "defusing mine. depth = " + depth);
-					rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();
+					defuse(rc, dir);
 					toggleDirection();
 					return dir;
 				}
