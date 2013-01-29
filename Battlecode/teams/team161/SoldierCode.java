@@ -59,27 +59,30 @@ public class SoldierCode {
 	    				if (blankMsg == true) break;
 	    				blankMsg = true;
 	    			}
-	    			else if (msg.action == Action.RUSH) {
-	    				rush = true;
-	    				break;
-	    			}
-	    			else if (msg.action == Action.DISTRESS) distress = true;
-	    			else if (msg.action == Action.GEN_SUP)
+	    			else 
 	    			{
-	    				generators = msg.location.x;
-	    				suppliers = msg.location.y;
-	    			}
-	    			else if (msg.action == Action.RALLY_AT) target = msg.location;
-	    			else if (msg.action == Action.ATTACK)
-	    			{
-	    				target = enemyHQ; //prolly target should be msg.location
-	    				attack = true;
-	    			}
-	    			else if (msg.action == Action.CAPTURING) canCapture = false;
-	    			else if (msg.action == Action.DONT_CAP)
-	    			{
-	    				spawnSpot = msg.location;
-	    				rc.setIndicatorString(0, "DUDE I HEARD YA");
+	    				if (msg.action == Action.DISTRESS) distress = true;
+	    				if (msg.action == Action.RUSH) {
+		    				rush = true;
+		    				break;
+		    			}
+		    			else if (msg.action == Action.GEN_SUP)
+		    			{
+		    				generators = msg.location.x;
+		    				suppliers = msg.location.y;
+		    			}
+		    			else if (msg.action == Action.RALLY_AT) target = msg.location;
+		    			else if (msg.action == Action.ATTACK)
+		    			{
+		    				target = enemyHQ; //prolly target should be msg.location
+		    				attack = true;
+		    			}
+		    			else if (msg.action == Action.CAPTURING) canCapture = false;
+		    			else if (msg.action == Action.DONT_CAP)
+		    			{
+		    				spawnSpot = msg.location;
+		    				rc.setIndicatorString(0, "DUDE I HEARD YA");
+		    			}
 	    			}
 	    			msgCount--;
     			}
