@@ -62,7 +62,8 @@ public class Bug {
 		}
 	}
 	public void go() throws GameActionException {
-		if (rc.getLocation().distanceSquaredTo(target) <= 2) return;
+		if (rc.getLocation().distanceSquaredTo(target) == 0) return;
+		if (rc.getLocation().distanceSquaredTo(target) <= 2 && rc.senseEnemyHQLocation().equals(target)) return;
 		if (rc.getLocation().distanceSquaredTo(target) > 81) {
 			if (Clock.getRoundNum() > 400) {
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 18, rc.getTeam().opponent());

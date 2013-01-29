@@ -58,7 +58,7 @@ public class RobotPlayer {
 			if (msg.action == Action.CAP_SHIELD ){//&& b.target.equals(rc.senseEnemyHQLocation())) {
 				MapLocation[] encamps = rc.senseEncampmentSquares(rc.getLocation(), 100, Team.NEUTRAL);
 				for (MapLocation encamp: encamps)
-					if (encamp.distanceSquaredTo(enemyHQ) < 900 && rc.senseNearbyGameObjects(Robot.class, encamp, 25, rc.getTeam().opponent()).length == 0) {
+					if (encamp.distanceSquaredTo(myHQ) < 400 && rc.senseNearbyGameObjects(Robot.class, encamp, 25, rc.getTeam().opponent()).length == 0) {
 						b.target = encamp;
 						getShield = true;
 						break;
