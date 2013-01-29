@@ -25,17 +25,20 @@ public class RobotPlayer {
     	
         while (true) {
             try {
-            	if (rc.getType() == RobotType.SOLDIER){
+            	if (rc.getType() == RobotType.SOLDIER) {
             		SoldierCode.soldierRun(rc);
             	}
-            	else if (rc.getType() == RobotType.HQ){
+            	else if (rc.getType() == RobotType.HQ) {
             		hqCode.hqRun(rc, enemyHQ);
             	}
-            	else if (rc.getType() == RobotType.ARTILLERY){
+            	else if (rc.getType() == RobotType.ARTILLERY) {
             		encampCode.artilleryRun(rc);
             	}
-            	else if (rc.getType() == RobotType.SHIELDS){
+            	else if (rc.getType() == RobotType.SHIELDS) {
             		encampCode.shieldsRun(rc);
+            	}
+            	else if (rc.getType() == RobotType.GENERATOR) {
+            		encampCode.generatorRun(rc);
             	}
             	rc.yield();
             } catch (Exception e) {

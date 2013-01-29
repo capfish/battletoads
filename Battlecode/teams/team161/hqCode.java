@@ -14,10 +14,9 @@ public class hqCode {
 	private static MapLocation shieldLoc = null;
 	private static Message msg;
 	private static RobotController rc;	
-	private static int width, height, area, num_suppliers, num_generators, dist_btw_HQs, roundsTillCaptured;
+	private static int width, height, num_suppliers, num_generators, dist_btw_HQs, roundsTillCaptured, killing;
 	private static Direction dir2enemyHQ;
 	private static Team spawnMine;
-	private static MapLocation[] encamps;
 	private static MapLocation myHQ, enemyHQ, rally_point;
 	private static Team myTeam, opponent;
 	private static MapLocation spawnSpot = null;
@@ -65,17 +64,10 @@ public class hqCode {
 	}
 	
     public static void HQrush() throws GameActionException {
+    	rc.setIndicatorString(1, "rushmode" + killing);
     	msg.reset();
-		for (int i = 0; i < 101; i++) {
-			msg.receive(i);
-			if (msg.action != null) System.out.println(msg.action + " : " + msg.location);
-			if (msg.action == Action.CAP_SHIELD) {
-				hasShield = true;
-				shieldLoc = msg.location;
-			} else if (msg.action == Action.DISTRESS) {
-				hasShield = false;
-			}
-		}
+    	msg.send(Action.RUSH, enemyHQ);
+
 		if (!hasShield) {
 			int numEnemyMines = rc.senseMineLocations(rc.getLocation(), 10000, rc.getTeam().opponent()).length;
 			if (numEnemyMines > 3) {
@@ -87,25 +79,10 @@ public class hqCode {
 			msg.send(Action.RALLY_AT, shieldLoc);
 			rc.setIndicatorString(0, "dont care about shield");
 		}
-		if (rc.isActive()) {
-			/*if (rc.getTeamPower() < 50) {
-				if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
-				else if(!rc.hasUpgrade(Upgrade.FUSION)) rc.researchUpgrade(Upgrade.FUSION);
-				else rc.researchUpgrade(Upgrade.NUKE);
-			} else {
-				if (Math.random() < 0.2) rc.spawn(randomDir(rc));
-				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) rc.researchUpgrade(Upgrade.PICKAXE);
-				else rc.spawn(randomDir(rc));
-			}*/
-			
-	         
-			 if (rc.canMove(rc.getLocation().directionTo(enemyHQ))) rc.spawn(rc.getLocation().directionTo(enemyHQ));
-			 else rc.spawn(randomDir(rc, 15));
-		}
+		if (rc.isActive()) spawnSoldier(rc);
     }
     public static void HQrally() throws GameActionException {
-    	msg.reset();
-		if (spawnSpot != null) msg.send(Action.DONT_CAP, spawnSpot);
+    	rc.setIndicatorString(1, "rallymode");
 		roundsTillCaptured --;
 		if (rc.isActive()) {
 			if (rc.getTeamPower() < 60) {
@@ -121,36 +98,9 @@ public class hqCode {
 				else spawnSoldier(rc);
 			}
 		}
-
-		for (int i = 0; i < 101; i ++) {
-			msg.receive(i);
-			if (msg.action != null) {
-				if (msg.action == Action.CAP_GEN) {
-					num_generators ++;
-					msg.send(Action.CAP, msg.location);
-				}
-				else if (msg.action == Action.CAP_SUP) {
-					num_suppliers ++;
-					msg.send(Action.CAP, msg.location);
-				}
-				else if (msg.action == Action.DEFUSING) {
-					msg.send(Action.DEFUSING, msg.location);
-				}
-				else if (msg.action == Action.CAPTURING) {
-					roundsTillCaptured = 25;
-					msg.send(Action.CAPTURING, msg.location);
-				}
-			}
-		}
 		
 		Robot[] friends = rc.senseNearbyGameObjects(Robot.class, 100000, myTeam);
 		int soldiers = friends.length - rc.senseAlliedEncampmentSquares().length;
-/*
-		for (Robot f : friends)
-			if (rc.senseRobotInfo(f).type == RobotType.SOLDIER)
-				soldiers++;
-		Robot[] fEncamps = rc.senseAlliedEncampmentSquares()
-*/			
 		if ((roundsTillCaptured <= 0 && rc.getTeamPower() < 40) || Clock.getRoundNum() > 2000 || rc.senseEnemyNukeHalfDone()) {
 			if (soldiers < 15) {
 //				rally_point = myHQ.add(dir2enemyHQ, 3);
@@ -187,12 +137,12 @@ public class hqCode {
 			}
 		}
 		msg.send(Action.GEN_SUP, new MapLocation( num_generators, num_suppliers ));
+		if (roundsTillCaptured > 0) msg.send(Action.CAPTURING, rc.getLocation());
     }
 	public static void hqRun(RobotController rc_, MapLocation enemyHQ_) throws GameActionException {
+		killing = 200;
 		rc = rc_;
 		enemyHQ = enemyHQ_;
-		area = height*width;
-		encamps = rc.senseEncampmentSquares(rc.getLocation(), 5000, Team.NEUTRAL);
 		msg = new Message(rc);
 		num_suppliers = num_generators = roundsTillCaptured = 0;
 		myHQ = rc.senseHQLocation();
@@ -210,7 +160,40 @@ public class hqCode {
 		
 		
 		while(true) {
-			if (Clock.getRoundNum() < 200) HQrush();
+			msg.reset();
+			if (spawnSpot != null) msg.send(Action.DONT_CAP, spawnSpot);
+			for (int i = 0; i < 101; i ++) {
+				msg.receive(i);
+				if (msg.action != null) {
+					if (msg.action == Action.CAP_GEN) {
+						num_generators ++;
+						msg.send(Action.CAP, msg.location);
+					}
+					else if (msg.action == Action.CAP_SUP) {
+						num_suppliers ++;
+						msg.send(Action.CAP, msg.location);
+					}
+					else if (msg.action == Action.DEFUSING) {
+						msg.send(Action.DEFUSING, msg.location);
+					}
+					else if (msg.action == Action.CAPTURING) {
+						roundsTillCaptured = 25;
+						msg.send(Action.CAPTURING, msg.location);
+					}
+					else if (msg.action == Action.KILLING) {
+						killing = 100;
+					}
+					else if (msg.action == Action.CAP_SHIELD) {
+						hasShield = true;
+						shieldLoc = msg.location;
+					}
+					else if (msg.action == Action.DISTRESS) {
+						hasShield = false;
+					}
+				}
+			}
+			killing --;
+			if (killing > 0) HQrush();
 			else HQrally();
 			rc.yield();
 		}
