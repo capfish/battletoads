@@ -37,22 +37,27 @@ public class Bug {
 		else initTurn = 1;
 		turnDir = initTurn;
 	}
+	private static boolean hasMine(MapLocation loc) {
+		Team t = rc.senseMine(loc);
+		if (t == rc.getTeam().opponent() || t == Team.NEUTRAL) return true;
+		return false;
+	}
 	public void retreat(Robot r) throws GameActionException {
 		RobotInfo info = rc.senseRobotInfo(r);
 		MapLocation loc = info.location;
 		if (info.roundsUntilMovementIdle != 0) {
 			Direction dir = rc.getLocation().directionTo(loc);
-			if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) == null) rc.move(dir);
+			if (rc.canMove(dir) && !hasMine(rc.getLocation().add(dir))) rc.move(dir);
 			return;
 		}
 		if (info.robot.getID() > rc.getRobot().getID()) return;
 		Direction dir = rc.getLocation().directionTo(loc).opposite();
-		if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) == null) rc.move(dir);
-		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) == null) rc.move(dir.rotateLeft());
-		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) == null) rc.move(dir.rotateRight());
-		else if (rc.canMove(dir) && rc.senseMine(rc.getLocation().add(dir)) != null) defuse(rc, dir);
-		else if (rc.canMove(dir.rotateLeft()) && rc.senseMine(rc.getLocation().add(dir.rotateLeft())) != null) defuse(rc, dir.rotateLeft());
-		else if (rc.canMove(dir.rotateRight()) && rc.senseMine(rc.getLocation().add(dir.rotateRight())) != null) defuse(rc, dir.rotateRight());		
+		if (rc.canMove(dir) && !hasMine(rc.getLocation().add(dir))) rc.move(dir);
+		else if (rc.canMove(dir.rotateLeft()) && !hasMine(rc.getLocation().add(dir.rotateLeft()))) rc.move(dir.rotateLeft());
+		else if (rc.canMove(dir.rotateRight()) && !hasMine(rc.getLocation().add(dir.rotateRight()))) rc.move(dir.rotateRight());
+		else if (rc.canMove(dir) && hasMine(rc.getLocation().add(dir))) defuse(rc, dir);
+		else if (rc.canMove(dir.rotateLeft()) && hasMine(rc.getLocation().add(dir.rotateLeft()))) defuse(rc, dir.rotateLeft());
+		else if (rc.canMove(dir.rotateRight()) && hasMine(rc.getLocation().add(dir.rotateRight()))) defuse(rc, dir.rotateRight());		
 	}
 	private static void defuse(RobotController rc, Direction dir) throws GameActionException {
 		rc.defuseMine(rc.getLocation().add(dir));
@@ -86,9 +91,9 @@ public class Bug {
 		dir2target = rc.getLocation().directionTo(target);
 		if (burrow) {
 			MapLocation newloc = rc.getLocation().add(dir2target);
-			if (rc.senseMine(newloc.add(dir2target)) == null ||					//CHANGE TO NOT CARE ABOUT OUR MINES
-					rc.senseMine(newloc.add(dir2target.rotateLeft())) == null ||
-					rc.senseMine(newloc.add(dir2target.rotateRight())) == null) {
+			if (!hasMine(newloc.add(dir2target)) ||
+				!hasMine(newloc.add(dir2target.rotateLeft())) ||
+				!hasMine(newloc.add(dir2target.rotateRight()))) {
 				burrow = false;
 				return;
 			}
@@ -138,7 +143,7 @@ public class Bug {
 	private static Direction turn(Direction dir) throws GameActionException {
 		if (rc.canMove(dir)) {
 			MapLocation newloc = rc.getLocation().add(dir);
-			if (rc.senseMine(newloc) != null) {
+			if (hasMine(newloc)) {
 				if (thinEnough(dir, newloc)) {
 					defuse(rc, dir);
 					toggleDirection();
@@ -158,7 +163,7 @@ public class Bug {
 		}
 	}
 	private static boolean thinEnough(Direction dir, MapLocation loc) {
-		for(int i = 1; i < depth; i++) if (rc.senseMine(loc.add(dir, i)) == null) return true;
+		for(int i = 1; i < depth; i++) if (!hasMine(loc.add(dir, i))) return true;
 		return false;
 	}
 	

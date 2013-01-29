@@ -201,6 +201,7 @@ public class SoldierCode {
     			}
     		}
     		if (rc.getLocation().equals(spawnSpot)) return false;
+    		//if (!safe(100)) return false;
         	capture();
         	return true;
     	}
