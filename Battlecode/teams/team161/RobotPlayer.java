@@ -14,7 +14,7 @@ import battlecode.common.Upgrade;
 public class RobotPlayer {
 	public static MapLocation enemyHQ, myHQ;
 	public static int mapHeight, mapWidth;
-	public static int shield = 20;
+//	public static int shield = 20;
 
 	public static void run(RobotController rc) {
 
@@ -26,7 +26,7 @@ public class RobotPlayer {
         while (true) {
             try {
             	if (rc.getType() == RobotType.SOLDIER){
-            		if (rc.isActive()) soldierRun(rc);
+            		SoldierCode.soldierRun(rc);
             	}
             	else if (rc.getType() == RobotType.HQ){
             		hqCode.hqRun(rc, enemyHQ);
@@ -43,6 +43,7 @@ public class RobotPlayer {
             }
         }
     }
+   	/*
     private static Direction randomDir(RobotController rc) {
         Direction dir = Direction.values()[(int)(Math.random()*8)];
         if(rc.canMove(dir)) return dir;
@@ -98,6 +99,7 @@ public class RobotPlayer {
         	Direction dir = rc.getLocation().directionTo(nearbyEncampments[0]);
             if (rc.canMove(dir)) rc.move(dir);
             else rc.move(randomDir(rc));
-        } else rc.move(randomDir(rc));*/
+        } else rc.move(randomDir(rc));
 	}
+*/
 }
