@@ -223,6 +223,18 @@ public class SoldierCode {
 
     private static boolean colonizeMode() throws GameActionException {
 		//rc.setIndicatorString(1, "colonize mode");
+    	//if not enough soldiers: don't colonize
+    	Robot[] friendlies = rc.senseNearbyGameObjects(Robot.class, myLoc, 100000, myTeam);
+    	int numSoldiers = 0;
+    	for (Robot r : friendlies)
+    	{
+    		if (rc.senseRobotInfo(r).type == RobotType.SOLDIER)
+    			numSoldiers++;
+    	}
+    	if (numSoldiers < 10)
+    		return false;
+    	
+    	
     	if (rc.getRobot().getID() % 3 != 0)
     		return false;
     	if (!myLoc.equals(spawnSpot) && rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
