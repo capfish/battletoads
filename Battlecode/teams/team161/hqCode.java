@@ -221,11 +221,12 @@ public class hqCode {
 					rc.researchUpgrade(Upgrade.NUKE);
 					msg.send(Action.ATTACK, myHQ);
 				}
-				else if (killing > 0 && rc.senseNearbyGameObjects(Robot.class, 36, opponent).length == 0)
-					HQrush();
-				else HQrally();
-				rc.yield();
 			}
+			if (killing > 0 && rc.senseNearbyGameObjects(Robot.class, 36, opponent).length == 0)
+				HQrush();
+			else HQrally();
+			rc.yield();
+			
 		}
 	}
 }

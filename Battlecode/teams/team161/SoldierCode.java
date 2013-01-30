@@ -18,7 +18,6 @@ public class SoldierCode {
     private static int shield = 20;
 	private static boolean getShield = false;
 	private static RobotController rc;
-	private static boolean canCapture;
 
 
     public static void soldierRun(RobotController rc_) throws GameActionException {
@@ -35,7 +34,7 @@ public class SoldierCode {
 			myLoc = rc.getLocation();
 			target = enemyHQ;
     		
-			rc.setIndicatorString(0, "");
+			//rc.setIndicatorString(0, ":(");
 			rc.setIndicatorString(1, "");
     		
     		//DATA
@@ -52,7 +51,6 @@ public class SoldierCode {
 	    		boolean distress = false;
 	    		boolean attack = false;
 	    		boolean rush = false;
-	    		boolean canCapture = true;
 	    		MapLocation shieldLoc = null;
 				msg.reset();
 	    		
@@ -81,7 +79,6 @@ public class SoldierCode {
 		    				target = enemyHQ; //prolly target should be msg.location
 		    				attack = true;
 		    			}
-		    			else if (msg.action == Action.CAPTURING) canCapture = false;
 		    			else if (msg.action == Action.SHIELD_AT) {
 	    					getShield = false;
 	    					shieldLoc = msg.location;
@@ -90,11 +87,7 @@ public class SoldierCode {
 		    				}
 		    			}
 		    			else if (msg.action == Action.WANT_SHIELD) getShield = true;
-		    			else if (msg.action == Action.DONT_CAP)
-		    			{
-		    				spawnSpot = msg.location;
-		    				rc.setIndicatorString(0, "DUDE I HEARD YA");
-		    			}
+		    			else if (msg.action == Action.DONT_CAP) spawnSpot = msg.location;
 	    			}
 	    			msgCount--;
     			}
@@ -111,8 +104,7 @@ public class SoldierCode {
 		    		else if (shield > 0 && shieldLoc != null) target = shieldLoc;
 		    		
 		    		if (attack == true) {
-		    			//if (!attackMode())
-		    				travelMode();
+		    			travelMode();
 		    		} else if (!attackMode())
 		    			if (!mineMode())
 		    				if (!colonizeMode())
@@ -128,11 +120,12 @@ public class SoldierCode {
     
     private static void rush() throws GameActionException
     {
+    	rc.setIndicatorString(0, "rushmode");
     	//while (true) {
 			msg.reset();
 			if (rc.getLocation().isAdjacentTo(enemyHQ)) msg.send(Action.KILLING, enemyHQ);
 			msg.receive(-1);
-			if (msg.action == Action.CAP_SHIELD ){//&& b.target.equals(rc.senseEnemyHQLocation())) {
+			if (msg.action == Action.CAP_SHIELD ){
 				MapLocation[] encamps = rc.senseEncampmentSquares(rc.getLocation(), 100, Team.NEUTRAL);
 				for (MapLocation encamp: encamps)
 					if (encamp.distanceSquaredTo(myHQ) < 400 && rc.senseNearbyGameObjects(Robot.class, encamp, 25, rc.getTeam().opponent()).length == 0) {
@@ -158,7 +151,7 @@ public class SoldierCode {
 					msg.send(Action.CAP_SHIELD, rc.getLocation());
 					System.out.println("GOT HERE SOLDIERCODE");
 				}
-				if (shield <= 0) {b.shieldGo(); System.out.println("shit goes down" + shield);}
+				if (rc.getShields() > 0) b.shieldGo();
 				else b.go();
 				rc.setIndicatorString(0, "target " + b.target + " getShield " + getShield);
 			}
@@ -168,6 +161,7 @@ public class SoldierCode {
     
     /*-----------------ATTACK CODE------------------*/
     private static boolean attackMode() throws GameActionException {
+    	rc.setIndicatorString(0, "attackmode");
     	Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 25, rc.getTeam().opponent());
     	for (Robot enemy: enemies) {
     		RobotInfo info = rc.senseRobotInfo(enemy);
@@ -179,7 +173,6 @@ public class SoldierCode {
     	}
     	return false;
     }
-    
     /*-----------------ATTACK END-------------------*/
     
     
@@ -187,6 +180,7 @@ public class SoldierCode {
 	
 	private static void travelMode() throws GameActionException
 	{
+    	rc.setIndicatorString(0, "travelmode");
 		if (myLoc.equals(target)) return;
 		b.target = target;
 		if (rc.getShields() > 0) b.shieldGo();
@@ -197,24 +191,7 @@ public class SoldierCode {
 		    msg.reset();
 		    msg.send(Action.SEE_ART, myLoc);
 		}
-		/*Direction dir = myLoc.directionTo(target);
-		if (!rc.canMove(dir)) dir = randomDir(10);
-		Team t = rc.senseMine(myLoc.add(dir));
-		if (t == Team.NEUTRAL || t == enemyTeam) rc.defuseMine(myLoc.add(dir));
-		else if (dir != Direction.NONE) {
-			rc.move(dir);
-			prev = dir;
-			//rc.setIndicatorString(1, "target " + target + " moved in direction " + dir);
-		} else rc.setIndicatorString(1, "target " + target + " something is wrong");*/
 	}
-	
-    /*private static Direction randomDir(int depth) {
-    	if (depth == 0) return Direction.NONE;
-        Direction dir = Direction.values()[(int)(Math.random()*8)];
-        if(rc.canMove(dir)) return dir;
-        else return randomDir(depth-1);
-    }*/
-
 	/*--------------TRAVEL CODE END--------------------*/
     
 
@@ -224,6 +201,7 @@ public class SoldierCode {
     private static boolean colonizeMode() throws GameActionException {
 		//rc.setIndicatorString(1, "colonize mode");
     	//if not enough soldiers: don't colonize
+    	rc.setIndicatorString(0, "colonizemode");
     	Robot[] friendlies = rc.senseNearbyGameObjects(Robot.class, myLoc, 100000, myTeam);
     	int numSoldiers = 0;
     	for (Robot r : friendlies)
@@ -265,7 +243,6 @@ public class SoldierCode {
     	}
     	MapLocation[] encamps = rc.senseEncampmentSquares(myLoc, 80, Team.NEUTRAL);
     	if (encamps.length == 0) return false;
-    	if (encamps.length != 0) rc.setIndicatorString(1, "# neutral encampments > 0");
     	MapLocation encampTarget = encamps[(int)Math.random()*encamps.length];
     	if (!encampTarget.equals(spawnSpot)) target = encampTarget;
     	return false;
@@ -304,7 +281,7 @@ public class SoldierCode {
 	/*--------------MINE CODE--------------------*/
     
     private static boolean mineMode() throws GameActionException {
-		//rc.setIndicatorString(0, "mine mode");
+		rc.setIndicatorString(0, "minemode");
 
     	if (rc.senseMine(myLoc) != null) return false;
     	if (rc.hasUpgrade(Upgrade.PICKAXE))
@@ -335,21 +312,11 @@ public class SoldierCode {
     	if (rc.senseNearbyGameObjects(Robot.class, dist, rc.getTeam().opponent()).length > 0) return false;
     	return true;
     }
-    private static boolean sparseMineField() {
-    	if (rc.getLocation().x % 2 == 0 && rc.getLocation().y % 2 == 0) return true;
-    	else return false;
-    }
     private static boolean pickaxeMineField() {
     	int a = rc.getLocation().x % 5;
     	int b = rc.getLocation().y % 5;
     	if (b == a*2 % 5) return true;
     	else return false;
-    }
-    private static boolean pickaxeSparseMineField() {
-    	int a = rc.getLocation().x % 4;
-    	int b = rc.getLocation().y % 4;
-    	if((a+b) % 4 == 0 && a == b) return true;
-    	return false;
     }
     private static void smartDefuseMine(Direction dir) throws GameActionException{
         Team t = rc.senseMine(myLoc.add(dir));
@@ -358,6 +325,5 @@ public class SoldierCode {
             rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield();rc.yield(); rc.yield();rc.yield();
         }
     }
-    
 	/*--------------MINE CODE END--------------------*/
 }
