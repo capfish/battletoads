@@ -215,15 +215,17 @@ public class hqCode {
 				rc.setIndicatorString(0, "dont care about shield");
 			}
 			killing --;
-			if (nukeMode && Clock.getRoundNum() > 200 && rc.senseNearbyGameObjects(Robot.class, 100000, myTeam).length > 10)
-			{
-				rc.researchUpgrade(Upgrade.NUKE);
-				msg.send(Action.ATTACK, myHQ);
+			if ( rc.isActive() ) {
+				if (nukeMode && Clock.getRoundNum() > 200 && rc.senseNearbyGameObjects(Robot.class, 100000, myTeam).length > 10)
+				{
+					rc.researchUpgrade(Upgrade.NUKE);
+					msg.send(Action.ATTACK, myHQ);
+				}
+				else if (killing > 0 && rc.senseNearbyGameObjects(Robot.class, 36, opponent).length == 0)
+					HQrush();
+				else HQrally();
+				rc.yield();
 			}
-			else if (killing > 0 && rc.senseNearbyGameObjects(Robot.class, 36, opponent).length == 0)
-				HQrush();
-			else HQrally();
-			rc.yield();
 		}
 	}
 }

@@ -85,7 +85,6 @@ public class SoldierCode {
 		    			else if (msg.action == Action.SHIELD_AT) {
 	    					getShield = false;
 	    					shieldLoc = msg.location;
-		    				System.out.println("shield at " + msg.location);
 		    				if (rc.getLocation().isAdjacentTo(msg.location)) {
 		    					shield --;
 		    				}
@@ -190,7 +189,8 @@ public class SoldierCode {
 	{
 		if (myLoc.equals(target)) return;
 		b.target = target;
-		b.go();
+		if (rc.getShields() > 0) b.shieldGo();
+		else b.go();
 		prev = b.prev;
 		Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 14, enemyTeam);
 		for (Robot enemy : enemies) if (rc.senseRobotInfo(enemy).type == RobotType.ARTILLERY) {
