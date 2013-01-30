@@ -146,6 +146,7 @@ public class Bug {
             if (hasMine(newloc)) {
                 if (thinEnough(dir, newloc) || iterations == 0) {
                     defuse(rc, dir);
+                    if (rc.getLocation().equals(stuck)) burrow = true;
                     toggleDirection();
                     return dir;
                 } else {

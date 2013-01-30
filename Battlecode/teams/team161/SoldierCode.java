@@ -180,6 +180,11 @@ public class SoldierCode {
 		b.target = target;
 		b.go();
 		prev = b.prev;
+		Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, GameConstants.sensorRadiusSquared, enemyTeam);
+		for (Robot enemy : enemies) if (rc.senseRobotInfo(enemy).RobotType == RobotType.ARTILLERY) {
+		    msg.reset();
+		    msg.send(Action.SEEART, myLoc);
+		}
 		/*Direction dir = myLoc.directionTo(target);
 		if (!rc.canMove(dir)) dir = randomDir(10);
 		Team t = rc.senseMine(myLoc.add(dir));
@@ -210,16 +215,16 @@ public class SoldierCode {
     		if (prev != null) {
     			for (int i = 0; i <= 1; i++) {
     				Direction dir = Direction.values()[(prev.ordinal()+i)%8];
-    				smartDefuseMine(dir);
-    				if (rc.senseEncampmentSquare(myLoc.add(dir))) {
+                                if (rc.senseEncampmentSquare(myLoc.add(dir))) {
+                                    smartDefuseMine(dir);
     					if (rc.canMove(dir)) {
     						rc.move(dir);
     						return true;
     					}
     				}
     				dir = Direction.values()[(prev.ordinal()-i+8)%8];
-    				smartDefuseMine(dir);
     				if (rc.senseEncampmentSquare(myLoc.add(dir))) {
+                                    smartDefuseMine(dir);
     					if (rc.canMove(dir)) {
     						rc.move(dir);
     						return true;
