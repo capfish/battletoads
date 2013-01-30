@@ -53,6 +53,7 @@ public class SoldierCode {
 	    		boolean attack = false;
 	    		boolean rush = false;
 	    		boolean canCapture = true;
+	    		MapLocation shieldLoc = null;
 				msg.reset();
 	    		
 	    		while (true) {
@@ -81,6 +82,15 @@ public class SoldierCode {
 		    				attack = true;
 		    			}
 		    			else if (msg.action == Action.CAPTURING) canCapture = false;
+		    			else if (msg.action == Action.SHIELD_AT) {
+	    					getShield = false;
+	    					shieldLoc = msg.location;
+		    				System.out.println("shield at " + msg.location);
+		    				if (rc.getLocation().isAdjacentTo(msg.location)) {
+		    					shield --;
+		    				}
+		    			}
+		    			else if (msg.action == Action.WANT_SHIELD) getShield = true;
 		    			else if (msg.action == Action.DONT_CAP)
 		    			{
 		    				spawnSpot = msg.location;
@@ -99,6 +109,8 @@ public class SoldierCode {
 		    			else
 		    				target = myHQ;
 		    		}
+		    		else if (shield > 0 && shieldLoc != null) target = shieldLoc;
+		    		
 		    		if (attack == true) {
 		    			//if (!attackMode())
 		    				travelMode();
@@ -160,7 +172,7 @@ public class SoldierCode {
     	Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 25, rc.getTeam().opponent());
     	for (Robot enemy: enemies) {
     		RobotInfo info = rc.senseRobotInfo(enemy);
-    		if(info.roundsUntilMovementIdle > 1) {
+    		if(info.roundsUntilMovementIdle > 1 && info.type == RobotType.SOLDIER) {
     			b.target = info.location; //perhaps want to keep track of the same robot.
         		b.go();
     			return true;
@@ -257,6 +269,7 @@ public class SoldierCode {
     	if (rc.senseCaptureCost() > rc.getTeamPower()) return false;
     	myLoc = rc.getLocation();
     	if (rc.senseCaptureCost() * 2 > rc.getTeamPower()) rc.captureEncampment(RobotType.GENERATOR);
+    	else if (getShield) rc.captureEncampment(RobotType.SHIELDS);
     	else if (myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite() && !surrounded(myLoc)) rc.captureEncampment(RobotType.ARTILLERY);
     	else if (myLoc.distanceSquaredTo(RobotPlayer.myHQ) < 64 && (myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite()
                   || myLoc.directionTo(enemyHQ) == myLoc.directionTo(myHQ).opposite().rotateLeft()

@@ -11,6 +11,7 @@ import battlecode.common.Upgrade;
 
 public class hqCode {
 	private static boolean hasShield = false;
+	private static boolean wantShield = false;
 	private static boolean nukeMode = true;
 	private static MapLocation shieldLoc = null;
 	private static Message msg;
@@ -159,7 +160,8 @@ public class hqCode {
 			if (myHQ.y == 0 || myHQ.y == height) if (adj_encamps >= 3) spawnSpot = myHQ.add(dir2enemyHQ);
 			else if (adj_encamps >= 5) spawnSpot = myHQ.add(dir2enemyHQ);
 		} else if (adj_encamps >= 8) spawnSpot = myHQ.add(dir2enemyHQ);
-		
+		rc.setIndicatorString(0, "");
+		rc.setIndicatorString(1, "");
 		
 		while(true) {
 			msg.reset();
@@ -187,7 +189,9 @@ public class hqCode {
 					}
 					else if (msg.action == Action.CAP_SHIELD) {
 						hasShield = true;
+						wantShield = false;
 						shieldLoc = msg.location;
+						rally_point = shieldLoc;
 					}
 					else if (msg.action == Action.DISTRESS) {
 						hasShield = false;
@@ -197,10 +201,21 @@ public class hqCode {
 						if (msg.location.distanceSquaredTo(enemyHQ) > 30)
 							nukeMode = false;
 					}
+					else if (msg.action == Action.SEE_ART){
+						wantShield = true;
+					}
 				}
 			}
+			if (!hasShield && wantShield) {
+				msg.send(Action.WANT_SHIELD, enemyHQ);
+				rc.setIndicatorString(0, "want shield");
+			} else if (hasShield) {
+				//tell them to gather at shield;
+				msg.send(Action.SHIELD_AT, shieldLoc);
+				rc.setIndicatorString(0, "dont care about shield");
+			}
 			killing --;
-			if (nukeMode && Clock.getRoundNum() > 200 && rc.senseNearbyGameObjects(Robot.class, 100000, myTeam).length < 10)
+			if (nukeMode && Clock.getRoundNum() > 200 && rc.senseNearbyGameObjects(Robot.class, 100000, myTeam).length > 10)
 			{
 				rc.researchUpgrade(Upgrade.NUKE);
 				msg.send(Action.ATTACK, myHQ);

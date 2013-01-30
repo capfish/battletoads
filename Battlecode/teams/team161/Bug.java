@@ -8,6 +8,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 import battlecode.common.Team;
 
 public class Bug {
@@ -45,7 +46,7 @@ public class Bug {
     public void retreat(Robot r) throws GameActionException {
         RobotInfo info = rc.senseRobotInfo(r);
         MapLocation loc = info.location;
-        if (info.roundsUntilMovementIdle != 0) {
+        if (info.roundsUntilMovementIdle != 0 && info.type == RobotType.SOLDIER) {
             Direction dir = rc.getLocation().directionTo(loc);
             if (rc.canMove(dir) && !hasMine(rc.getLocation().add(dir))) rc.move(dir);
             return;
