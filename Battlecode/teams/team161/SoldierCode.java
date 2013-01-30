@@ -180,10 +180,10 @@ public class SoldierCode {
 		b.target = target;
 		b.go();
 		prev = b.prev;
-		Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, GameConstants.sensorRadiusSquared, enemyTeam);
-		for (Robot enemy : enemies) if (rc.senseRobotInfo(enemy).RobotType == RobotType.ARTILLERY) {
+		Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 14, enemyTeam);
+		for (Robot enemy : enemies) if (rc.senseRobotInfo(enemy).type == RobotType.ARTILLERY) {
 		    msg.reset();
-		    msg.send(Action.SEEART, myLoc);
+		    msg.send(Action.SEE_ART, myLoc);
 		}
 		/*Direction dir = myLoc.directionTo(target);
 		if (!rc.canMove(dir)) dir = randomDir(10);
