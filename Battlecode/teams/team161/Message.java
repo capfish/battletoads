@@ -43,7 +43,7 @@ public class Message {
 	public void send(Action message, MapLocation loc) throws GameActionException {
 		int temp = ((((loc.x << loc_size) + loc.y) << msg_size) + message.ordinal()) << shift;
 		int msg = pad(temp);
-		int channel = (channel_origin - s_channel + ID) % NUM_CHANNELS;
+		int channel = (channel_origin - s_channel + ID + NUM_CHANNELS) % NUM_CHANNELS;
 		rc.broadcast(channel, msg);
 		//System.out.println("sending on channel " + channel);
 		s_channel ++;
