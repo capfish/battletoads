@@ -11,6 +11,7 @@ import battlecode.common.Upgrade;
 
 public class hqCode {
 	private static boolean hasShield = false;
+	private static boolean nukeMode = true;
 	private static MapLocation shieldLoc = null;
 	private static Message msg;
 	private static RobotController rc;	
@@ -114,6 +115,7 @@ public class hqCode {
 		else if (rc.senseNearbyGameObjects(Robot.class, 36, opponent).length != 0) //dist_btw_HQs/16, opponent).length != 0) 
 		{
 			msg.send(Action.DISTRESS, myHQ);
+			nukeMode = false;
 			rc.setIndicatorString(0, "distress");
 		}
 		//else if ((dist_btw_HQs < 900 || encamps.length < area/10) && Clock.getRoundNum() < 300)
@@ -189,15 +191,24 @@ public class hqCode {
 					}
 					else if (msg.action == Action.DISTRESS) {
 						hasShield = false;
+						nukeMode = false;
+					}
+					else if (msg.action == Action.ENEMY) {
+						if (msg.location.distanceSquaredTo(enemyHQ) > 30)
+							nukeMode = false;
 					}
 				}
 			}
 			killing --;
-			if (killing > 0 && rc.senseNearbyGameObjects(Robot.class, 36, opponent).length == 0)
+			if (nukeMode && Clock.getRoundNum() > 200 && rc.senseNearbyGameObjects(Robot.class, 100000, myTeam).length < 10)
+			{
+				rc.researchUpgrade(Upgrade.NUKE);
+				msg.send(Action.ATTACK, myHQ);
+			}
+			else if (killing > 0 && rc.senseNearbyGameObjects(Robot.class, 36, opponent).length == 0)
 				HQrush();
 			else HQrally();
 			rc.yield();
 		}
 	}
-
 }

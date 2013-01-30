@@ -206,6 +206,8 @@ public class SoldierCode {
 
     private static boolean colonizeMode() throws GameActionException {
 		//rc.setIndicatorString(1, "colonize mode");
+    	if (rc.getRobot().getID() % 3 != 0)
+    		return false;
     	if (!myLoc.equals(spawnSpot) && rc.senseEncampmentSquare(myLoc)) { //if encamp is already ours, can't move there.
     		if (prev != null) {
     			for (int i = 0; i <= 1; i++) {
