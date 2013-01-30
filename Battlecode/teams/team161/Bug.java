@@ -160,6 +160,8 @@ public class Bug {
             }
         } else {
             depth = 1;
+            if (iterations == 0)
+            	return dir;
             return turn(Direction.values()[(dir.ordinal()+turnDir) % 8], iterations-1);
         }
     }
