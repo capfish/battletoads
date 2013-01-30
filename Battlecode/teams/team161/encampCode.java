@@ -39,6 +39,7 @@ public class encampCode {
 	                }
 	            }
 	        }
+	        rc.yield();
         }
     }
     public static boolean isGood(MapLocation loc) throws GameActionException {
