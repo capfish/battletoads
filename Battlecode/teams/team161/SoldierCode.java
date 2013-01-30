@@ -91,6 +91,11 @@ public class SoldierCode {
 	    			}
 	    			msgCount--;
     			}
+	    		Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 14, enemyTeam);
+	    		for (Robot e : enemies) if (rc.senseRobotInfo(e).type == RobotType.ARTILLERY) {
+	    		    msg.reset();
+	    		    msg.send(Action.SEE_ART, myLoc);
+	    		}
     			if (rush && !(distress)) rush();
     			else {
 		    		if (distress == true)
@@ -151,7 +156,7 @@ public class SoldierCode {
 					msg.send(Action.CAP_SHIELD, rc.getLocation());
 					System.out.println("GOT HERE SOLDIERCODE");
 				}
-				if (rc.getShields() > 0) b.shieldGo();
+				if (rc.getShields() > 0 && shield <= 0) b.shieldGo();
 				else b.go();
 				rc.setIndicatorString(0, "target " + b.target + " getShield " + getShield);
 			}
@@ -183,14 +188,9 @@ public class SoldierCode {
     	rc.setIndicatorString(0, "travelmode");
 		if (myLoc.equals(target)) return;
 		b.target = target;
-		if (rc.getShields() > 0) b.shieldGo();
+		if (rc.getShields() > 5 && shield <= 0 && enemyHQ.equals(target)) b.shieldGo();
 		else b.go();
 		prev = b.prev;
-		Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, 14, enemyTeam);
-		for (Robot enemy : enemies) if (rc.senseRobotInfo(enemy).type == RobotType.ARTILLERY) {
-		    msg.reset();
-		    msg.send(Action.SEE_ART, myLoc);
-		}
 	}
 	/*--------------TRAVEL CODE END--------------------*/
     
